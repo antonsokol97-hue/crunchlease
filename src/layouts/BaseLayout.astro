@@ -1,0 +1,66 @@
+---
+import '../styles/global.css';
+import { SITE_NAME } from '../config';
+import { buildOrganizationLd, buildWebSiteLd } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonicalUrl?: string;
+  /** Adds <meta name="robots" content="noindex"> — used for embed routes (SPEC.md §4.4). */
+  noindex?: boolean;
+  /** Suppresses sitewide header/footer chrome — used for embed routes. */
+  bare?: boolean;
+}
+
+const { title, description = '', canonicalUrl, noindex = false, bare = false } = Astro.props;
+
+const websiteLd = buildWebSiteLd();
+const organizationLd = buildOrganizationLd();
+---
+
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- TODO(owner): Search Console verification meta tag (SPEC.md §7). -->
+    <meta name="google-site-verification" content="TODO" />
+
+    <!-- TODO(owner): GA4 snippet — SPEC.md §7 events: calculate, copy_link, pdf_export, embed_copy, scenario_compare_on. -->
+    <script is:inline defer data-todo="ga4-measurement-id"></script>
+
+    {!bare && <script is:inline type="application/ld+json" set:html={JSON.stringify(websiteLd)} />}
+    {!bare && <script is:inline type="application/ld+json" set:html={JSON.stringify(organizationLd)} />}
+  </head>
+  <body>
+    {
+      !bare && (
+        <header class="site-header flex items-center justify-between">
+          <a href="/" class="text-lg font-semibold">
+            {SITE_NAME}
+          </a>
+        </header>
+      )
+    }
+
+    <slot />
+
+    {
+      !bare && (
+        <footer class="site-footer">
+          <p>
+            &copy; {new Date().getFullYear()} {SITE_NAME}. All calculations are estimates, not financial or legal
+            advice.
+          </p>
+        </footer>
+      )
+    }
+  </body>
+</html>
