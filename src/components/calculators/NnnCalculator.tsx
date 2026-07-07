@@ -1,11 +1,12 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { formatCurrency, formatDollars, formatPercent } from '../../calc-core/money';
+import { formatCurrency, formatDollars, formatPerSf, formatPercent } from '../../calc-core/money';
 import { computeNnn, DEFAULTS, NNN_MESSAGES, type NnnInput, type NnnMode, type NnnResult } from '../../calc-core/nnn';
 import { enumParam, numberParam, type ParamCodec, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
 import CalcShell from './CalcShell';
 import ModeTabs from './ModeTabs';
 import NumberInput from './NumberInput';
+import RentInput from './RentInput';
 import ResultCard, { type ResultRow } from './ResultCard';
 import YearTable from './YearTable';
 import StackedBarChart from './StackedBarChart';
@@ -115,26 +116,17 @@ export default function NnnCalculator({ embed: embedProp }: NnnCalculatorProps) 
           step={100}
           suffix="SF"
         />
-        <NumberInput
-          id={`${prefix}base`}
-          label="Base rent"
-          value={scenario.base}
-          onChange={(v) => setField(prefix, 'base', v)}
-          min={0}
-          max={500}
-          step={0.25}
-          suffix="$/SF/yr"
-        />
+        <RentInput id={`${prefix}base`} label="Base rent" valuePerYr={scenario.base} onChangePerYr={(v) => setField(prefix, 'base', v)} minPerYr={0} maxPerYr={500} unitLabel="SF" />
 
         {scenario.mode === 'psf' ? (
           <>
-            <NumberInput id={`${prefix}tax`} label="Property taxes" value={scenario.tax} onChange={(v) => setField(prefix, 'tax', v)} min={0} max={50} step={0.25} suffix="$/SF/yr" />
-            <NumberInput id={`${prefix}ins`} label="Insurance" value={scenario.ins} onChange={(v) => setField(prefix, 'ins', v)} min={0} max={20} step={0.25} suffix="$/SF/yr" />
-            <NumberInput id={`${prefix}cam`} label="CAM" value={scenario.cam} onChange={(v) => setField(prefix, 'cam', v)} min={0} max={50} step={0.25} suffix="$/SF/yr" />
+            <RentInput id={`${prefix}tax`} label="Property taxes" valuePerYr={scenario.tax} onChangePerYr={(v) => setField(prefix, 'tax', v)} minPerYr={0} maxPerYr={50} unitLabel="SF" />
+            <RentInput id={`${prefix}ins`} label="Insurance" valuePerYr={scenario.ins} onChangePerYr={(v) => setField(prefix, 'ins', v)} minPerYr={0} maxPerYr={20} unitLabel="SF" />
+            <RentInput id={`${prefix}cam`} label="CAM" valuePerYr={scenario.cam} onChangePerYr={(v) => setField(prefix, 'cam', v)} minPerYr={0} maxPerYr={50} unitLabel="SF" />
             <details>
               <summary className="cursor-pointer text-sm" style={{ color: 'var(--color-text-muted)' }}>Other recoverables</summary>
               <div className="mt-2">
-                <NumberInput id={`${prefix}other`} label="Other recoverables" value={scenario.other} onChange={(v) => setField(prefix, 'other', v)} min={0} max={50} step={0.25} suffix="$/SF/yr" />
+                <RentInput id={`${prefix}other`} label="Other recoverables" valuePerYr={scenario.other} onChangePerYr={(v) => setField(prefix, 'other', v)} minPerYr={0} maxPerYr={50} unitLabel="SF" />
               </div>
             </details>
           </>
@@ -164,10 +156,10 @@ export default function NnnCalculator({ embed: embedProp }: NnnCalculatorProps) 
   const resultRows = (result: NnnResult): ResultRow[] => {
     if (!result.ok) return [];
     const rows: ResultRow[] = [
-      { label: 'NNN charges / SF / yr', value: formatCurrency(result.nnnPerSf) },
+      { label: 'NNN charges', value: formatPerSf(result.nnnPerSf, 'SF') },
       { label: 'NNN / month', value: formatDollars(result.annualNnn / 12) },
       { label: 'NNN / year', value: formatDollars(result.annualNnn) },
-      { label: 'All-in rent / SF / yr', value: formatCurrency(result.grossPerSf), emphasis: true },
+      { label: 'All-in rent', value: formatPerSf(result.grossPerSf, 'SF'), emphasis: true },
       { label: 'All-in / month', value: formatDollars(result.monthlyTotal) },
       { label: 'All-in / year', value: formatDollars(result.annualTotal) },
     ];

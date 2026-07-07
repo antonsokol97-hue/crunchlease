@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { formatCurrency, formatDollars, formatPercent, formatSf } from '../../calc-core/money';
+import { formatCurrency, formatDollars, formatPerSf, formatPercent, formatSf } from '../../calc-core/money';
 import {
   computeLoadFactor,
   DEFAULTS,
@@ -13,6 +13,7 @@ import CalcShell from './CalcShell';
 import NumberInput from './NumberInput';
 import UnitToggle from './UnitToggle';
 import ResultCard, { type ResultRow } from './ResultCard';
+import RentInput from './RentInput';
 import ShareBar from '../ShareBar';
 import EmbedModal from '../EmbedModal';
 
@@ -89,7 +90,7 @@ export default function LoadFactorCalculator({ embed: embedProp }: LoadFactorCal
         { label: 'Load factor', value: formatPercent(resultA.loadFactor), emphasis: solve === 'lf' },
         { label: 'Loss factor', value: formatPercent(resultA.lossFactor) },
         ...(resultA.effectivePerUSF !== null
-          ? [{ label: 'Effective rent / USF / yr', value: formatCurrency(resultA.effectivePerUSF), emphasis: true }]
+          ? [{ label: 'Effective rent', value: formatPerSf(resultA.effectivePerUSF, 'USF'), emphasis: true }]
           : []),
       ]
     : [];
@@ -146,15 +147,14 @@ export default function LoadFactorCalculator({ embed: embedProp }: LoadFactorCal
         />
       )}
 
-      <NumberInput
+      <RentInput
         id="lf-rent"
         label="Quoted rent"
-        value={rent}
-        onChange={(value) => set('rent', value)}
-        min={0}
-        max={500}
-        step={0.5}
-        suffix="$/RSF/yr"
+        valuePerYr={rent}
+        onChangePerYr={(value) => set('rent', value)}
+        minPerYr={0}
+        maxPerYr={500}
+        unitLabel="RSF"
         helpText="Optional — leave at 0 to hide the cost-impact output."
       />
 
@@ -180,15 +180,14 @@ export default function LoadFactorCalculator({ embed: embedProp }: LoadFactorCal
             step={0.5}
             suffix="%"
           />
-          <NumberInput
+          <RentInput
             id="lf-rentB"
             label="Quoted rent"
-            value={rentB}
-            onChange={(value) => set('rentB', value)}
-            min={0}
-            max={500}
-            step={0.5}
-            suffix="$/RSF/yr"
+            valuePerYr={rentB}
+            onChangePerYr={(value) => set('rentB', value)}
+            minPerYr={0}
+            maxPerYr={500}
+            unitLabel="RSF"
           />
         </div>
       )}
