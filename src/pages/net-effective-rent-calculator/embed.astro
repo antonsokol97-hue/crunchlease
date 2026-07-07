@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import NetEffectiveRentCalculator from '../../components/calculators/NetEffectiveRentCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /net-effective-rent-calculator/embed/. EmbedModal points the snippet here.
+const slug = 'net-effective-rent-calculator';
+const title = 'Net Effective Rent Calculator — Free Rent, TI & Escalations';
+const heading = 'Net Effective Rent Calculator';
+const description =
+  'Turn face rent into net effective rent: model free months, escalations, TI and concessions over the full term, straight-line or NPV. See the true deal economics.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <NetEffectiveRentCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>

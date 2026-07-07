@@ -1,0 +1,48 @@
+---
+last_reviewed: 2026-07-07
+---
+
+{/* DRAFT: Anton to edit. Draft copy per SPEC.md §T4 content outline + §4 template (items 6–8).
+    Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
+
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+
+## Face rent vs net effective rent
+
+Face rent is the headline rate on a term sheet. Net effective rent (NER) is what you actually pay
+per square foot per year once free rent, TI, and other concessions are spread across the whole term.
+A "$30/SF with 3 months free and $30/SF TI" deal isn't a $30 deal — it's meaningfully less, and NER
+is the number that lets you compare offers apples-to-apples.
+
+## How free rent and TI change deal economics
+
+Free months abate rent at the start of the term; TI and cash concessions are landlord contributions
+that offset what you pay. Both pull the effective rate below face:
+
+```
+scheduled(m) = face/12 × sf × (1 + esc/100)^floor((m−1)/12)
+collected    = Σ scheduled(m) − free-rent value
+NER $/SF/yr  = (collected − TI×sf − concessions) / (term in years) / sf
+```
+
+## Straight-line vs NPV effective rent
+
+The straight-line NER simply averages net rent over the term — the convention most brokers quote.
+The NPV mode discounts future rent to present value and solves the level rent with the same present
+value, which better reflects the time value of money on long or heavily front-loaded deals. Turn on
+NPV mode to see both.
+
+## Worked example
+
+A 5,000 SF, 60-month lease at $30/SF face escalating 3%/yr, with 3 months free and $30/SF TI,
+collects **$758,870** against **$796,370** of scheduled rent. Net of the **$150,000** TI, the NER is
+**$24.35/SF/yr** — about **18.8% below** the face rate. To size the TI side of the deal, use the
+[TI Allowance Calculator](/tenant-improvement-calculator/); to layer on pass-throughs, the
+[NNN Lease Calculator](/nnn-lease-calculator/).
+
+## How landlords use NER (and why face rates stay high)
+
+Landlords prefer giving concessions over cutting face rent because face rates set building
+valuations and comps. A high face rate with free rent protects the headline number while still
+winning the deal — which is exactly why tenants should compare on NER. Investors capitalizing the
+income can carry the effective rent into the [Cap Rate Calculator](/cap-rate-calculator/).

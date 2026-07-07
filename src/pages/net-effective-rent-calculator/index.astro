@@ -1,0 +1,85 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import NetEffectiveRentCalculator from '../../components/calculators/NetEffectiveRentCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/net-effective-rent.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'net-effective-rent-calculator';
+
+// Meta (SPEC.md §T4 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'Net Effective Rent Calculator — Free Rent, TI & Escalations';
+const heading = 'Net Effective Rent Calculator';
+const description =
+  'Turn face rent into net effective rent: model free months, escalations, TI and concessions over the full term, straight-line or NPV. See the true deal economics.';
+const valueProp = 'Turn a face rate with free rent and TI into the net effective rent you actually pay.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T4 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What is net effective rent?',
+    answer:
+      'Net effective rent (NER) is the average rent you actually pay per square foot per year once concessions are spread across the lease term. It nets free rent, TI allowance, and other concessions out of the scheduled rent, then divides by the term. NER is the apples-to-apples number for comparing deals with different concession packages.',
+  },
+  {
+    question: 'How do I calculate NER with free rent?',
+    answer:
+      'Total the scheduled rent over the term (including escalations), subtract the value of the free months, subtract TI and any cash concessions, then divide by the number of years and the square footage. This tool runs it month by month so escalations and the free-rent period land in the right places.',
+  },
+  {
+    question: 'Does NER include TI allowance?',
+    answer:
+      'Yes — TI allowance is a landlord concession, so it reduces net effective rent. This calculator subtracts total TI (allowance × SF) plus any other concessions from the collected rent before averaging. Note it models base rent only; NNN pass-throughs are separate and usually continue even during free-rent months.',
+  },
+  {
+    question: 'Why do landlords give free rent instead of lower rent?',
+    answer:
+      'Face rent drives building valuations, loan sizing, and comparable-lease comps, so landlords protect the headline rate and give concessions instead. A $30/SF face with free rent looks stronger on paper than a $24/SF face, even if the effective economics are similar. That gap is exactly why tenants should compare on NER.',
+  },
+  {
+    question: 'What discount rate should I use?',
+    answer:
+      "For the NPV mode, use a rate reflecting your cost of capital or the landlord's — often 6–10%. A higher discount rate lowers the value of future rent, which matters most on long or heavily front-loaded deals. If you're not sure, compare the straight-line NER (discount rate 0) against a couple of NPV scenarios.",
+  },
+];
+
+// Related calculators (SPEC.md §3): lease-tier cross-links + an investment hub.
+const relatedSlugs = ['tenant-improvement-calculator', 'nnn-lease-calculator', 'cap-rate-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <NetEffectiveRentCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

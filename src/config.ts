@@ -41,7 +41,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
     category: 'lease',
     primaryKeyword: 'net effective rent calculator',
     shortDescription: 'Turn face rent, free rent, and TI concessions into a single effective rent figure.',
-    status: 'planned',
+    status: 'live',
   },
   {
     slug: 'load-factor-calculator',
