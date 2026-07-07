@@ -1,0 +1,85 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import RentEscalationCalculator from '../../components/calculators/RentEscalationCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/rent-escalation.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'rent-escalation-calculator';
+
+// Meta (SPEC.md §T6 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'Rent Escalation Calculator — Fixed %, Steps & CPI Schedules';
+const heading = 'Rent Escalation Calculator';
+const description =
+  'Build the full rent schedule for any escalation clause: fixed percentage, fixed dollar steps, custom schedules or CPI with caps and floors. Export to CSV or PDF.';
+const valueProp = 'Build the full rent schedule for any escalation clause — fixed %, step, CPI, or a custom year-by-year table.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T6 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What is a typical commercial rent escalation?',
+    answer:
+      'Fixed annual increases of about 2.5–3.5%/yr are the market standard in many US office and retail leases, though some use fixed dollar steps or CPI-linked bumps instead. Industrial and longer-term deals sometimes escalate less frequently — every few years rather than annually. The right number depends on asset type, market, and lease length.',
+  },
+  {
+    question: 'How does a CPI escalation clause work?',
+    answer:
+      'A CPI clause ties your annual increase to a published inflation index (usually a regional CPI-U). Each year the rent rises by the measured CPI change, often bounded by a floor and a cap so neither side is fully exposed. This tool models a constant assumed CPI; real leases true up against the actual index each year.',
+  },
+  {
+    question: 'What is a rent escalation cap?',
+    answer:
+      "A cap limits how much rent can rise in a period. A CPI cap bounds the inflation rate before it's applied; a rent-increase cap ceilings the rent itself. Rent caps come in cumulative form (measured from year 1, letting a landlord bank unused increases) and non-cumulative form (reset each year, more tenant-friendly). The difference matters when increases are uneven.",
+  },
+  {
+    question: 'Are escalations negotiable?',
+    answer:
+      'Yes. The rate, the frequency, the mechanism (fixed vs CPI), and any caps or floors are all on the table. Tenants often trade a slightly higher escalation for more free rent or TI, or push for a non-cumulative cap. Model the alternatives here and compare the total obligation before you sign.',
+  },
+  {
+    question: 'Do escalations apply to NNN charges too?',
+    answer:
+      "Usually escalations apply to base rent only. NNN pass-throughs — taxes, insurance, and CAM — float on actual costs rather than a fixed escalator, though CAM can carry its own cap. So your total occupancy cost rises from both the base-rent escalation and expense growth. Model the pass-through side in the NNN and CAM calculators.",
+  },
+];
+
+// Related calculators (SPEC.md §3): lease-tier cross-links + an investment hub.
+const relatedSlugs = ['nnn-lease-calculator', 'cam-calculator', 'cap-rate-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <RentEscalationCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

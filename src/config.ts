@@ -57,7 +57,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
     category: 'lease',
     primaryKeyword: 'rent escalation calculator',
     shortDescription: 'Project year-by-year rent growth under fixed %, step, CPI, or custom escalations.',
-    status: 'planned',
+    status: 'live',
   },
   {
     slug: 'cap-rate-calculator',

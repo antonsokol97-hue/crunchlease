@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import RentEscalationCalculator from '../../components/calculators/RentEscalationCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /rent-escalation-calculator/embed/. EmbedModal points the snippet here.
+const slug = 'rent-escalation-calculator';
+const title = 'Rent Escalation Calculator — Fixed %, Steps & CPI Schedules';
+const heading = 'Rent Escalation Calculator';
+const description =
+  'Build the full rent schedule for any escalation clause: fixed percentage, fixed dollar steps, custom schedules or CPI with caps and floors. Export to CSV or PDF.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <RentEscalationCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>

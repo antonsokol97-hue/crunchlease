@@ -1,0 +1,51 @@
+---
+last_reviewed: 2026-07-07
+---
+
+{/* DRAFT: Anton to edit. Draft copy per SPEC.md §T6 content outline + §4 template (items 6–8).
+    Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
+
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+
+## The four common escalation structures
+
+Commercial leases raise rent over the term in one of a few ways: a **fixed percentage** each year, a
+**fixed dollar step** ($/SF), a **CPI-linked** bump tied to inflation, or a **custom** schedule
+negotiated year by year. This calculator builds the full schedule for any of the four, applied every
+year or every N years.
+
+## Fixed vs CPI: who carries inflation risk
+
+A fixed percentage or step gives both sides certainty — you know the rent in year 10 on day one. A
+CPI clause shifts inflation risk to the tenant: if inflation runs hot, so does your rent. Caps and
+floors split that risk, which is why most CPI clauses have both.
+
+```
+fixed %:  rate(y) = start × (1 + pct/100)^k
+fixed step: rate(y) = start + step × k
+CPI:      g = clamp(CPI, floor, cap); rate(y) = start × (1 + g/100)^k
+          (k = periods elapsed = floor((y − 1) / frequency))
+```
+
+## Caps, floors and how they're negotiated
+
+Two levers matter. A **CPI cap/floor** bounds the annual inflation rate before it's applied. A
+separate **rent-increase cap** ceilings how much the rent itself can climb year over year — and it
+comes in two flavors. A **cumulative** cap measures the ceiling from year 1, so a landlord can
+"bank" an under-cap year and apply a bigger increase later; a **non-cumulative** cap resets to the
+prior year's actual, giving the tenant more protection. The two only diverge when annual increases
+are uneven — try a custom schedule to see it.
+
+## Worked example
+
+$28.00/SF starting rent escalating 3%/yr over a 10-year, 4,000 SF lease reaches **$36.53/SF** in
+year 10, for a total obligation of **$1,283,954**. To see how those escalations stack on top of
+pass-through costs, pair this with the [NNN Lease Calculator](/nnn-lease-calculator/) and the
+[CAM Charges Calculator](/cam-calculator/).
+
+## Reading an escalation clause
+
+Look for the mechanism (percent, step, CPI, or a stated schedule), the frequency, the base the
+increase compounds off, and any caps or floors. If the clause is CPI-linked, confirm which index and
+how it's trued up. Investors capitalizing the income stream can carry the escalated NOI into the
+[Cap Rate Calculator](/cap-rate-calculator/).
