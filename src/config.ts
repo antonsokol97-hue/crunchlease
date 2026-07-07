@@ -1,8 +1,7 @@
 import type { ToolCategory, ToolMeta } from './lib/types';
 
-// TODO(owner): replace with the purchased domain/name (SPEC.md Appendix C.3 #1).
-export const SITE_NAME = 'TODO_SITE_NAME';
-export const DOMAIN = 'https://TODO-DOMAIN.example';
+export const SITE_NAME = 'CrunchLease';
+export const DOMAIN = 'https://crunchlease.com';
 
 // TODO(owner): GA4 measurement ID (SPEC.md §10, Appendix C.3 #4). Empty = no
 // analytics load even after consent.
