@@ -15,7 +15,7 @@ export type AdSlotProps = {
 };
 
 /**
- * Reserved-height ad container (SPEC.md §6). Always occupies the same box so
+ * Reserved-height ad container (SPEC.md §9). Always occupies the same box so
  * enabling a network later causes zero layout shift. When ADS_ENABLED is
  * false, the box stays visible in dev (so the reserved space is easy to
  * spot) and is hidden via `visibility` (not `display`, which would collapse

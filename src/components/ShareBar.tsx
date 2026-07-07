@@ -9,9 +9,10 @@ export type ShareBarProps = {
 
 /**
  * Results action row: copy link, PDF export, embed snippet, reset (SPEC.md
- * §4.4-4.5). Copy-link and PDF need no tool-specific logic and are fully
- * wired here; embed (opens the snippet modal, built with T1) and reset are
- * supplied by each tool's island via props.
+ * §4 item 4; embed snippet §3). Copy-link and PDF need no tool-specific logic
+ * and are fully wired here; embed (opens the snippet modal, built with the
+ * first tool, T5 Load Factor) and reset are supplied by each tool's island
+ * via props.
  */
 export default function ShareBar({ onCopyLink, onEmbed, onReset, className = '' }: ShareBarProps) {
   const [copied, setCopied] = useState(false);

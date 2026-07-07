@@ -10,7 +10,7 @@ export type ResultRow = {
 
 export type ResultCardProps = {
   rows: ResultRow[];
-  /** Shown instead of rows when there's nothing to calculate yet (SPEC.md §4.2 — never show NaN). */
+  /** Shown instead of rows when there's nothing to calculate yet (SPEC.md §7 — never show NaN). */
   emptyState?: ReactNode;
   title?: string;
 };

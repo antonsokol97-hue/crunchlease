@@ -17,7 +17,7 @@ export type NumberInputProps = {
 
 /**
  * Labeled numeric input with clamp-on-blur range validation and inline error
- * text (SPEC.md §4.2). Typing an out-of-range value shows the error and
+ * text (SPEC.md §7). Typing an out-of-range value shows the error and
  * keeps the typed value until blur, at which point it clamps.
  */
 export default function NumberInput({

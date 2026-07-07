@@ -1,6 +1,6 @@
 /**
  * Generic, framework-agnostic URL query-param encode/decode for calculator
- * state (SPEC.md §4.1). Each tool defines its own `ParamSchema` mapping field
+ * state (SPEC.md §3). Each tool defines its own `ParamSchema` mapping field
  * names to short query keys; invalid or missing values silently fall back to
  * the field's default — results should never show NaN.
  */

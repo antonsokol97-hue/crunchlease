@@ -5,7 +5,7 @@ const DEBOUNCE_MS = 300;
 
 /**
  * Hydrates calculator state from the URL on mount and debounces
- * `history.replaceState` on every subsequent change (SPEC.md §4.1).
+ * `history.replaceState` on every subsequent change (SPEC.md §3).
  * `schema` should be a stable, module-scoped `ParamSchema` for the tool.
  */
 export function useUrlState<T extends Record<string, unknown>>(schema: ParamSchema<T>) {

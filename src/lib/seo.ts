@@ -1,5 +1,5 @@
 /**
- * JSON-LD builders (SPEC.md §5/§8). Pure functions returning plain objects —
+ * JSON-LD builders (SPEC.md §8). Pure functions returning plain objects —
  * callers are responsible for `JSON.stringify`-ing into a `<script
  * type="application/ld+json">` tag.
  */

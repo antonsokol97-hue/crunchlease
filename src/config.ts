@@ -4,7 +4,7 @@ import type { ToolMeta } from './lib/types';
 export const SITE_NAME = 'TODO_SITE_NAME';
 export const DOMAIN = 'https://TODO-DOMAIN.example';
 
-// Flip to true once an ad network is wired up (SPEC.md §6).
+// Flip to true once an ad network is wired up (SPEC.md §9).
 export const ADS_ENABLED = false;
 
 // Tool registry — the single source of truth for hub links, sitemap coverage,

@@ -77,7 +77,7 @@ const faqLd = faqEntries.length > 0 ? faqEntries : null;
   isEmbed && (
     <script>
       // Responsive iframe support: notify the parent frame of our content
-      // height on load and on resize (SPEC.md §4.4).
+      // height on load and on resize (SPEC.md §3).
       const sendHeight = () =>
         window.parent.postMessage({ type: 'cre-calc-embed-height', height: document.documentElement.scrollHeight }, '*');
       window.addEventListener('load', sendHeight);

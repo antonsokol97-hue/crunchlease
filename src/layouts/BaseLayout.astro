@@ -7,7 +7,7 @@ interface Props {
   title: string;
   description?: string;
   canonicalUrl?: string;
-  /** Adds <meta name="robots" content="noindex"> — used for embed routes (SPEC.md §4.4). */
+  /** Adds <meta name="robots" content="noindex"> — used for embed routes (SPEC.md §3). */
   noindex?: boolean;
   /** Suppresses sitewide header/footer chrome — used for embed routes. */
   bare?: boolean;
@@ -30,10 +30,11 @@ const organizationLd = buildOrganizationLd();
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    <!-- TODO(owner): Search Console verification meta tag (SPEC.md §7). -->
+    <!-- TODO(owner): Search Console verification meta tag (SPEC.md §8). -->
     <meta name="google-site-verification" content="TODO" />
 
-    <!-- TODO(owner): GA4 snippet — SPEC.md §7 events: calculate, copy_link, pdf_export, embed_copy, scenario_compare_on. -->
+    <!-- TODO(owner): GA4 snippet, loaded after consent — SPEC.md §10 events: calc_input_change,
+         calc_result_valid, pdf_export, csv_export, embed_copied, share_link_copied, scenario_added, related_click. -->
     <script is:inline defer data-todo="ga4-measurement-id"></script>
 
     {!bare && <script is:inline type="application/ld+json" set:html={JSON.stringify(websiteLd)} />}

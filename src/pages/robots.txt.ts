@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { DOMAIN } from '../config';
 
-// Dynamic so the sitemap URL always tracks config.DOMAIN (SPEC.md §5/§8).
+// Dynamic so the sitemap URL always tracks config.DOMAIN (SPEC.md §3/§8).
 // Embed routes are excluded from indexing via <meta name="robots" content="noindex">
 // on the page itself, not via Disallow here — disallowing crawl would hide
 // that noindex tag from Google and risk the URL surfacing anyway.

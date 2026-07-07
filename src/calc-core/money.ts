@@ -1,8 +1,8 @@
 /**
  * Rounding and formatting helpers shared by every calc-core module.
  *
- * SPEC.md §3.1: compute in full floating-point precision, round only at the
- * presentation/result boundary. Currency rounds half-up to 2 decimals.
+ * SPEC.md §6: compute in full floating-point precision, round only at
+ * display. Currency rounds half-up to 2 decimals.
  */
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
