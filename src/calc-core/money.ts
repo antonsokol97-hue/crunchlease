@@ -51,6 +51,15 @@ export function formatPercent(value: number, decimals = 2): string {
   return `${roundTo(value * 100, decimals).toFixed(decimals)}%`;
 }
 
+/**
+ * Format a $/SF/yr value showing both the annual and monthly basis, e.g.
+ * "$32.70 /SF/yr · $2.73 /SF/mo" (SPEC.md §6 — results always show both).
+ * `unitLabel` is the area basis: SF, USF, RSF, etc.
+ */
+export function formatPerSf(perYr: number, unitLabel = 'SF'): string {
+  return `${formatCurrency(perYr)} /${unitLabel}/yr · ${formatCurrency(perYr / 12)} /${unitLabel}/mo`;
+}
+
 /** Format a plain number (ratios, $/SF, etc.) to a fixed number of decimals. */
 export function formatNumber(value: number, decimals = 2): string {
   return roundTo(value, decimals).toFixed(decimals);

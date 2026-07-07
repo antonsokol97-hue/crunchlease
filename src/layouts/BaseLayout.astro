@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { SITE_NAME } from '../config';
 import { buildOrganizationLd, buildWebSiteLd } from '../lib/seo';
+import RentUnitToggle from '../components/RentUnitToggle.tsx';
 
 interface Props {
   title: string;
@@ -43,10 +44,11 @@ const organizationLd = buildOrganizationLd();
   <body>
     {
       !bare && (
-        <header class="site-header flex items-center justify-between">
+        <header class="site-header flex items-center justify-between gap-4">
           <a href="/" class="text-lg font-semibold">
             {SITE_NAME}
           </a>
+          <RentUnitToggle client:load />
         </header>
       )
     }
