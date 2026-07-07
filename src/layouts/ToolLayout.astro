@@ -49,7 +49,7 @@ const breadcrumbLd = buildBreadcrumbListLd([
 const faqLd = faqEntries.length > 0 ? faqEntries : null;
 ---
 
-<BaseLayout title={title} description={description} canonicalUrl={canonicalUrl} noindex={isEmbed} bare={isEmbed}>
+<BaseLayout title={title} description={description} canonicalUrl={canonicalUrl} ogImage={`/og/${slug}.png`} noindex={isEmbed} bare={isEmbed}>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(webAppLd)} />
   {!isEmbed && <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />}
 

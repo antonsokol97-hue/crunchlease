@@ -15,9 +15,13 @@
     "@astrojs/mdx": "^4.3.14",
     "@astrojs/react": "^4.2.0",
     "@astrojs/sitemap": "^3.2.1",
+    "@fontsource/dm-sans": "^5.2.8",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
     "astro": "^5.1.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "satori": "^0.26.0",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
