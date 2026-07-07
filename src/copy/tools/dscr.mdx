@@ -1,11 +1,11 @@
 ---
-last_reviewed: 2026-07-07
+last_reviewed: 2026-07-08
 ---
 
 {/* DRAFT: Anton to edit. Draft copy per SPEC.md §T8 content outline + §4 template (items 6–8).
     Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
 
-<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-08.</p>
 
 ## What DSCR measures and why lenders anchor on it
 
@@ -34,8 +34,31 @@ $180,000 NOI, that's a **1.45x** DSCR.
 
 ## Minimum DSCRs by property type
 
-Directional lender minimums (Appendix A.2): multifamily (agency) 1.20–1.25x · office/retail
-1.25–1.35x · industrial 1.20–1.30x · hotel/self-storage 1.40x+ · SBA owner-user as low as 1.15x.
+Most 2026 CRE loans require a minimum DSCR of **1.20–1.35x**, with the best terms reserved for deals
+above **1.35x**. Directional lender minimums by property type (Appendix A.2), drawn from 2026 CRE
+lender guides (Commercial Loan Direct, Clearhouse, CLS CRE, Cor Advisors):
+
+| Property type | Minimum DSCR | Notes |
+|---|---|---|
+| Multifamily (agency Fannie/Freddie) | 1.20–1.25x | |
+| Industrial | 1.20–1.25x | Lender-favored sector |
+| Retail | 1.25–1.40x | Grocery-anchored lower; specialty/lifestyle higher |
+| Office | 1.35–1.50x | Tightened sharply on vacancy concerns; CBD non-trophy higher |
+| Hotel / self-storage | 1.40–1.60x | Income volatility |
+| SBA owner-user (504/7a) | 1.15–1.25x | Evaluates global cash flow |
+| Credit-tenant NNN lease | as low as 1.05x | |
+
+## Why the lender's DSCR differs from yours
+
+The DSCR a lender computes is almost always lower than the one an owner runs, because underwriting
+haircuts the income. Even at 100% occupancy a lender applies a **5–10% vacancy factor**; even if you
+self-manage, they add a **3–8% management fee**; and many stress-test the payment at a **higher
+qualifying rate** than your actual note. Each adjustment shrinks NOI or inflates debt service, so a
+deal that pencils at 1.35x on your numbers can land near the 1.20x line on theirs.
+
+Model the gap before the lender does: use the scenario compare to run DSCR under two rate scenarios
+side by side, and re-enter NOI net of a vacancy and management haircut to see the underwritten
+coverage rather than the optimistic one.
 
 ## Solving the max loan from NOI
 
