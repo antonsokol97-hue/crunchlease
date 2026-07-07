@@ -1,11 +1,35 @@
-import type { ToolMeta } from './lib/types';
+import type { ToolCategory, ToolMeta } from './lib/types';
 
 // TODO(owner): replace with the purchased domain/name (SPEC.md Appendix C.3 #1).
 export const SITE_NAME = 'TODO_SITE_NAME';
 export const DOMAIN = 'https://TODO-DOMAIN.example';
 
+// TODO(owner): GA4 measurement ID (SPEC.md §10, Appendix C.3 #4). Empty = no
+// analytics load even after consent.
+export const GA_MEASUREMENT_ID = '';
+
 // Flip to true once an ad network is wired up (SPEC.md §9).
 export const ADS_ENABLED = false;
+
+// Category hub metadata (SPEC.md §1). Drives the /lease-calculators/ and
+// /investment-calculators/ index pages and the tool breadcrumb.
+export const CATEGORY_META: Record<ToolCategory, { name: string; slug: string; blurb: string }> = {
+  lease: {
+    name: 'Lease Calculators',
+    slug: 'lease-calculators',
+    blurb: 'Tenant- and landlord-side tools for pricing and comparing commercial leases.',
+  },
+  investment: {
+    name: 'Investment Calculators',
+    slug: 'investment-calculators',
+    blurb: 'Underwriting tools for screening deals — value, returns, and loan sizing.',
+  },
+};
+
+/** Tools in a category, in registry (T-number) order. */
+export function toolsByCategory(category: ToolCategory): ToolMeta[] {
+  return TOOL_REGISTRY.filter((tool) => tool.category === category);
+}
 
 // Tool registry — the single source of truth for hub links, sitemap coverage,
 // and related-tool cross-links (SPEC.md §1). Order matches the T1–T8 numbering

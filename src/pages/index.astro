@@ -1,44 +1,58 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { DOMAIN, SITE_NAME, TOOL_REGISTRY } from '../config';
+import { CATEGORY_META, DOMAIN, SITE_NAME, toolsByCategory } from '../config';
+import type { ToolCategory } from '../lib/types';
 
-const title = `Commercial Lease Calculators | ${SITE_NAME}`;
+const title = `Commercial Lease & Investment Calculators | ${SITE_NAME}`;
 const description =
-  'Free calculators for commercial real estate leases: load factor, NNN, CAM, TI amortization, net effective rent, rent escalation, percentage rent, and parking ratio.';
+  'Free calculators for commercial real estate: NNN, CAM, TI amortization, net effective rent, rent escalation, load factor, cap rate, and DSCR.';
+
+const groups: ToolCategory[] = ['lease', 'investment'];
 ---
 
 <BaseLayout title={title} description={description} canonicalUrl={DOMAIN}>
   <main class="mx-auto max-w-4xl px-4 py-12">
-    <h1 class="text-2xl font-bold">Commercial Lease Calculators</h1>
-    <p class="mt-2 max-w-2xl text-base" style={{ color: 'var(--color-text-muted)' }}>
-      Free, shareable tools for the lease-side math brokers and tenants run every day — no signup, no spreadsheet.
+    <h1 class="text-2xl font-bold">Commercial Real Estate Calculators</h1>
+    <p class="mt-2 max-w-2xl text-base" style="color: var(--color-text-muted)">
+      Free, shareable tools for the lease and investment math brokers, tenants, and investors run every day — no
+      signup, no spreadsheet.
     </p>
 
-    <ul class="mt-8 grid gap-4 sm:grid-cols-2">
-      {
-        TOOL_REGISTRY.map((tool) => (
-          <li class="rounded-lg border p-4" style={{ borderColor: 'var(--color-border)' }}>
-            {tool.status === 'live' ? (
-              <a href={`/${tool.slug}/`} class="text-lg font-semibold hover:underline">
-                {tool.name}
-              </a>
-            ) : (
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-lg font-semibold">{tool.name}</span>
-                <span
-                  class="whitespace-nowrap rounded-full px-2 py-0.5 text-xs"
-                  style={{ backgroundColor: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}
-                >
-                  Coming soon
-                </span>
-              </div>
-            )}
-            <p class="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              {tool.shortDescription}
-            </p>
-          </li>
-        ))
-      }
-    </ul>
+    {
+      groups.map((category) => (
+        <section class="mt-10">
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 class="text-xl font-semibold">{CATEGORY_META[category].name}</h2>
+            <a href={`/${CATEGORY_META[category].slug}/`} class="text-sm hover:underline" style="color: var(--color-accent)">
+              View all →
+            </a>
+          </div>
+          <ul class="mt-4 grid gap-4 sm:grid-cols-2">
+            {toolsByCategory(category).map((tool) => (
+              <li class="rounded-lg border p-4" style="border-color: var(--color-border)">
+                {tool.status === 'live' ? (
+                  <a href={`/${tool.slug}/`} class="text-lg font-semibold hover:underline">
+                    {tool.name}
+                  </a>
+                ) : (
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-lg font-semibold">{tool.name}</span>
+                    <span
+                      class="whitespace-nowrap rounded-full px-2 py-0.5 text-xs"
+                      style="background-color: var(--color-warning-bg); color: var(--color-warning)"
+                    >
+                      Coming soon
+                    </span>
+                  </div>
+                )}
+                <p class="mt-1 text-sm" style="color: var(--color-text-muted)">
+                  {tool.shortDescription}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
   </main>
 </BaseLayout>

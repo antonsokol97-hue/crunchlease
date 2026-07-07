@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CATEGORY_META, DOMAIN, SITE_NAME, toolsByCategory } from '../config';
+import { buildBreadcrumbListLd } from '../lib/seo';
+import type { ToolCategory } from '../lib/types';
+
+interface Props {
+  category: ToolCategory;
+}
+
+const { category } = Astro.props;
+const meta = CATEGORY_META[category];
+const tools = toolsByCategory(category);
+
+const title = `${meta.name} — ${SITE_NAME}`;
+const canonicalUrl = new URL(`/${meta.slug}/`, DOMAIN).toString();
+const breadcrumbLd = buildBreadcrumbListLd([
+  { name: 'Home', url: DOMAIN },
+  { name: meta.name, url: canonicalUrl },
+]);
+---
+
+<BaseLayout title={title} description={meta.blurb} canonicalUrl={canonicalUrl}>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
+
+  <main class="mx-auto max-w-4xl px-4 py-12">
+    <nav aria-label="Breadcrumb" class="text-sm" style="color: var(--color-text-muted)">
+      <a href="/">Home</a> / <span>{meta.name}</span>
+    </nav>
+    <h1 class="mt-2 text-2xl font-bold">{meta.name}</h1>
+    <p class="mt-2 max-w-2xl text-base" style="color: var(--color-text-muted)">{meta.blurb}</p>
+
+    <ul class="mt-8 grid gap-4 sm:grid-cols-2">
+      {
+        tools.map((tool) => (
+          <li class="rounded-lg border p-4" style="border-color: var(--color-border)">
+            {tool.status === 'live' ? (
+              <a href={`/${tool.slug}/`} class="text-lg font-semibold hover:underline">
+                {tool.name}
+              </a>
+            ) : (
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-lg font-semibold">{tool.name}</span>
+                <span
+                  class="whitespace-nowrap rounded-full px-2 py-0.5 text-xs"
+                  style="background-color: var(--color-warning-bg); color: var(--color-warning)"
+                >
+                  Coming soon
+                </span>
+              </div>
+            )}
+            <p class="mt-1 text-sm" style="color: var(--color-text-muted)">
+              {tool.shortDescription}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</BaseLayout>

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import Faq from '../components/Faq.astro';
-import { SITE_NAME, DOMAIN } from '../config';
+import { SITE_NAME, DOMAIN, CATEGORY_META, getTool } from '../config';
 import { buildBreadcrumbListLd, buildWebApplicationLd } from '../lib/seo';
 import type { FaqEntry } from '../lib/types';
 
@@ -29,9 +29,21 @@ const { title, heading = title, description, slug, breadcrumbLabel = heading, fa
 const isEmbed = embedProp ?? Astro.url.searchParams.get('embed') === '1';
 const canonicalUrl = new URL(`/${slug}/`, DOMAIN).toString();
 
+// Home → Category → Tool breadcrumb (SPEC.md §3). Category comes from the tool
+// registry; falls back to Home → Tool if the slug isn't registered.
+const category = getTool(slug)?.category;
+const categoryCrumb = category
+  ? {
+      name: CATEGORY_META[category].name,
+      path: `/${CATEGORY_META[category].slug}/`,
+      url: new URL(`/${CATEGORY_META[category].slug}/`, DOMAIN).toString(),
+    }
+  : null;
+
 const webAppLd = buildWebApplicationLd({ name: heading, description, url: canonicalUrl });
 const breadcrumbLd = buildBreadcrumbListLd([
   { name: 'Home', url: DOMAIN },
+  ...(categoryCrumb ? [categoryCrumb] : []),
   { name: breadcrumbLabel, url: canonicalUrl },
 ]);
 const faqLd = faqEntries.length > 0 ? faqEntries : null;
@@ -52,10 +64,14 @@ const faqLd = faqEntries.length > 0 ? faqEntries : null;
       </main>
     ) : (
       <main class="tool-page mx-auto max-w-3xl px-4 py-8">
-        {/* TODO(SPEC.md §3): add the Category crumb (Home → Category → Tool) once the
-            category hub pages exist in Wave 3; linking now would 404. */}
         <nav aria-label="Breadcrumb" class="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          <a href="/">Home</a> / <span>{breadcrumbLabel}</span>
+          <a href="/">Home</a> /
+          {categoryCrumb && (
+            <>
+              {' '}<a href={categoryCrumb.path}>{categoryCrumb.name}</a> /
+            </>
+          )}
+          <span>{breadcrumbLabel}</span>
         </nav>
         <h1 class="mt-2 text-2xl font-bold">{heading}</h1>
         <div class="mt-6">
