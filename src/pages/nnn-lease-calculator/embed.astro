@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import NnnCalculator from '../../components/calculators/NnnCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /nnn-lease-calculator/embed/. EmbedModal points the iframe snippet here.
+const slug = 'nnn-lease-calculator';
+const title = 'NNN Lease Calculator — Triple Net Rent Cost Per SF & Month';
+const heading = 'Triple Net (NNN) Lease Calculator';
+const description =
+  'Calculate true triple net lease costs: base rent plus taxes, insurance and CAM per SF, monthly and annual totals, with escalations over the full lease term.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <NnnCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>

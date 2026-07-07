@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import NnnCalculator from '../../components/calculators/NnnCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/nnn.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'nnn-lease-calculator';
+
+// Meta (SPEC.md §T1 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'NNN Lease Calculator — Triple Net Rent Cost Per SF & Month';
+const heading = 'Triple Net (NNN) Lease Calculator';
+const description =
+  'Calculate true triple net lease costs: base rent plus taxes, insurance and CAM per SF, monthly and annual totals, with escalations over the full lease term.';
+const valueProp = 'See the true all-in cost of a triple net lease — base rent plus taxes, insurance, and CAM per SF and per month.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T1 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What does NNN mean in a lease?',
+    answer:
+      'NNN stands for "triple net" — a lease where the tenant pays base rent plus the three nets: property taxes, building insurance, and common area maintenance (CAM). Instead of one all-inclusive rate, the tenant covers its share of these operating costs on top of rent, so the effective occupancy cost is higher than the quoted base rate alone.',
+  },
+  {
+    question: 'Is NNN paid monthly or annually?',
+    answer:
+      'NNN charges are quoted as an annual $/SF figure but almost always billed monthly, alongside base rent, as an estimated amount. After year-end the landlord reconciles the estimates against actual expenses and issues a true-up bill or credit. Budget on the annual number, but expect to pay one-twelfth of it each month.',
+  },
+  {
+    question: "What's a typical NNN charge per square foot?",
+    answer:
+      'It varies widely by property type and market. As a directional range, property taxes run $0.50–$6.00+/SF, insurance $0.05–$1.00/SF, and CAM $1.00–$6.00/SF for retail (lower for industrial). Total NNN of $6–$12/SF is common for multi-tenant retail and office; always check the actual expense breakdown rather than assuming.',
+  },
+  {
+    question: 'Who pays for roof and structure in a triple net lease?',
+    answer:
+      'It depends on the lease. In many "true" NNN leases the tenant covers nearly everything, but roof and structural repairs are frequently carved back to the landlord, especially in single-tenant deals. In multi-tenant buildings, structural costs are often excluded from CAM. Read the maintenance and exclusions clauses carefully — this is negotiable.',
+  },
+  {
+    question: 'NNN vs gross lease — which is cheaper?',
+    answer:
+      "Neither is inherently cheaper — it depends on how the numbers are set. A gross lease bundles operating costs into one rate, so the landlord prices in a cushion; a NNN lease separates them, so you pay actual costs plus base rent. Compare the all-in $/SF of each. This calculator gives you the NNN all-in figure to put side by side with a gross quote.",
+  },
+];
+
+// Related calculators (SPEC.md §3): cross-link within the lease tier + an
+// investment hub (Cap Rate).
+const relatedSlugs = ['cam-calculator', 'net-effective-rent-calculator', 'cap-rate-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <NnnCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

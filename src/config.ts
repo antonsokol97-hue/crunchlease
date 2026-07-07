@@ -17,7 +17,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
     category: 'lease',
     primaryKeyword: 'triple net lease calculator',
     shortDescription: 'Add base rent, taxes, insurance, and CAM to see the true all-in cost of an NNN lease.',
-    status: 'planned',
+    status: 'live',
   },
   {
     slug: 'cam-calculator',

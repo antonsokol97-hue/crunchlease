@@ -1,0 +1,60 @@
+---
+last_reviewed: 2026-07-07
+---
+
+{/* DRAFT: Anton to edit. Draft copy per SPEC.md §T1 content outline + §4 template (items 6–8).
+    Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
+
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+
+## How triple net (NNN) leases work
+
+In a triple net lease the tenant pays base rent plus its share of the "three nets" —
+property taxes, insurance, and common area maintenance (CAM) — on top of the quoted rate. The
+face rent a landlord advertises is only part of the story; the number that matters for budgeting is
+the all-in occupancy cost per square foot once the nets are added.
+
+## How to calculate NNN cost per square foot
+
+Add the three nets to base rent to get the gross-equivalent rate, then multiply by your square
+footage:
+
+```
+NNN $/SF/yr    = taxes + insurance + CAM (× admin fee) + other recoverables
+all-in $/SF/yr = base rent + NNN
+annual cost    = all-in $/SF/yr × leased SF
+```
+
+If your landlord quotes building totals instead of per-SF rates, switch to **Building totals**
+mode: the calculator applies your pro-rata share (your SF ÷ building SF) before converting to a
+per-SF figure.
+
+## Worked example (defaults)
+
+A 3,000 SF space at $24.00/SF base, with $3.50 taxes, $1.20 insurance, and $4.00 CAM, carries
+**$8.70/SF/yr** in NNN charges — an all-in **$32.70/SF/yr**, or **$8,175/month** and
+**$98,100/year**. With base rent and NNN each escalating 3% a year, the full five-year obligation
+is **$520,826**. Free rent or TI concessions would change the picture — model those in the
+[Net Effective Rent Calculator](/net-effective-rent-calculator/).
+
+## What's included in each "net"
+
+Taxes and insurance are usually straightforward pass-throughs. CAM is where the negotiation lives:
+it can carry a management/admin fee (commonly 10–15%) and may or may not be capped. Drill into your
+CAM line with the [CAM Charges Calculator](/cam-calculator/), and if you're weighing a build-out,
+the [TI Allowance Calculator](/tenant-improvement-calculator/) shows how improvement costs fold into
+rent.
+
+## Typical NNN expense ranges
+
+Directional US ranges for a sanity check (Appendix A.5):
+
+| Expense | Typical $/SF/yr |
+| --- | --- |
+| Property taxes | 0.50–6.00+ |
+| Insurance | 0.05–1.00 (higher on the coasts / FL) |
+| CAM | 1.00–6.00 retail; lower for industrial |
+| CAM admin fee | 10–15% |
+
+Investors underwriting the building behind the lease will want the
+[Cap Rate Calculator](/cap-rate-calculator/) to turn this occupancy cost into value.
