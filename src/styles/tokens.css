@@ -1,35 +1,61 @@
-/* PLACEHOLDER — replace with final tokens (SPEC.md Appendix C.3 #2). Grays + one accent only. */
+/* Design tokens — translated from the VCR DTCG source (light mode). Colours are
+   an sRGB hex fallback followed by the canonical OKLCH. Font faces are provided
+   by @fontsource imports (see BaseLayout); §9 keeps self-hosting to two visible
+   families (DM Sans + Plus Jakarta Sans), with JetBrains Mono as a system-mono
+   fallback. */
 :root {
-  /* Color */
+  /* Color — semantic layer resolved to primitives (light) */
   --color-bg: #ffffff;
-  --color-surface: #f7f7f8;
-  --color-border: #e2e2e5;
-  --color-text: #1a1a1e;
-  --color-text-muted: #6b6b74;
-  --color-accent: #2563eb;
-  --color-accent-contrast: #ffffff;
-  --color-error: #b91c1c;
-  --color-warning: #92400e;
-  --color-warning-bg: #fef3c7;
+  --color-bg: oklch(1 0 0); /* Surface.background · neutral.0 */
+  --color-surface: #ffffff;
+  --color-surface: oklch(1 0 0); /* Surface.card · neutral.0 — separates via --shadow-card */
+  --color-muted: #eeeeee;
+  --color-muted: oklch(0.95 0 0); /* Surface.muted · neutral.150 — subtle grey fills */
+  --color-border: #e5e5e5;
+  --color-border: oklch(0.922 0 0); /* Border.border · neutral.200 */
+  --color-text: #0a0a0a;
+  --color-text: oklch(0.145 0 0); /* Surface.foreground · neutral.950 */
+  --color-text-muted: #737373;
+  --color-text-muted: oklch(0.556 0 0); /* Surface.muted-foreground · neutral.500 */
+  --color-accent: #085efb;
+  --color-accent: oklch(0.546 0.245 262); /* Action.primary · blue.500 */
+  --color-accent-contrast: #fafafa;
+  --color-accent-contrast: oklch(0.985 0 0); /* Action.primary-foreground · neutral.50 */
+  --color-error: #d6332f;
+  --color-error: oklch(0.577 0.2 27.325); /* Status.destructive · red.500 */
+  --color-warning: #e27100;
+  --color-warning: oklch(0.666 0.179 58); /* Status.warning · amber.500 */
+  --color-success: #009965;
+  --color-success: oklch(0.596 0.145 163); /* Status.success · green.500 */
+  --color-warning-bg: #fbeee0;
+  --color-warning-bg: oklch(0.666 0.179 58 / 0.12); /* Status.warning-bg · amber.500 @ 12% */
 
-  /* Type scale */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2rem;
+  /* Elevation — semantic.shadow (light) */
+  --shadow-card: 0 2px 12px -2px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
 
-  /* Spacing / radii */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  /* Type — primitive.font */
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Figtree', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --text-xs: 0.75rem; /* size.2xs */
+  --text-sm: 0.875rem; /* size.sm */
+  --text-base: 1rem; /* size.base */
+  --text-lg: 1.125rem; /* size.lg */
+  --text-xl: 1.25rem; /* size.xl */
+  --text-2xl: 1.5rem; /* size.2xl */
+  --text-3xl: 1.875rem; /* size.3xl */
+
+  /* Spacing — primitive.space (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radius — primitive.radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
 }

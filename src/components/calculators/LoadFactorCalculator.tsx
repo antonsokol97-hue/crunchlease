@@ -261,7 +261,10 @@ function CompareTable({
   const winnerStyle = { color: 'var(--color-accent)', fontWeight: 600 };
 
   return (
-    <div className="rounded-lg p-4 text-sm" style={{ backgroundColor: 'var(--color-surface)' }}>
+    <div
+      className="rounded-lg border p-4 text-sm"
+      style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)', boxShadow: 'var(--shadow-card)' }}
+    >
       <h3 className="mb-3 font-semibold">Cost per usable foot</h3>
       <div className="flex justify-between">
         <span>Building A</span>

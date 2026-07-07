@@ -17,7 +17,7 @@ export default function CalcShell({ inputs, results, shareBar, className = '' }:
   return (
     <div
       className={`grid gap-6 rounded-lg border p-4 md:grid-cols-2 md:p-6 ${className}`}
-      style={{ borderColor: 'var(--color-border)' }}
+      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', boxShadow: 'var(--shadow-card)' }}
     >
       <div className="space-y-4">{inputs}</div>
       <div className="space-y-4">

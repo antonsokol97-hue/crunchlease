@@ -13,8 +13,8 @@ const SEGMENTS: { from: number; to: number; color: string }[] = [
   { from: 0.8, to: 1.0, color: 'var(--color-error)' },
   { from: 1.0, to: 1.2, color: 'var(--color-warning)' },
   { from: 1.2, to: 1.25, color: 'var(--color-warning)' },
-  { from: 1.25, to: 1.4, color: 'var(--color-accent)' },
-  { from: 1.4, to: 1.6, color: 'var(--color-accent)' },
+  { from: 1.25, to: 1.4, color: 'var(--color-success)' },
+  { from: 1.4, to: 1.6, color: 'var(--color-success)' },
 ];
 
 function pct(v: number): number {

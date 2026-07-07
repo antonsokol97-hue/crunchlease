@@ -26,7 +26,10 @@ export type ScenarioCompareProps = {
  */
 export default function ScenarioCompare({ labelA, labelB, inputsA, inputsB, metrics, onRemove }: ScenarioCompareProps) {
   return (
-    <div className="rounded-lg border p-4 md:p-6" style={{ borderColor: 'var(--color-border)' }}>
+    <div
+      className="rounded-lg border p-4 md:p-6"
+      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', boxShadow: 'var(--shadow-card)' }}
+    >
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold">Compare scenarios</h3>
         <button
@@ -54,7 +57,7 @@ export default function ScenarioCompare({ labelA, labelB, inputsA, inputsB, metr
       <div className="mt-6 overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-surface)' }}>
+            <tr style={{ backgroundColor: 'var(--color-muted)' }}>
               <th scope="col" className="px-3 py-2 text-left font-medium">Metric</th>
               <th scope="col" className="px-3 py-2 text-right font-medium">{labelA}</th>
               <th scope="col" className="px-3 py-2 text-right font-medium">{labelB}</th>

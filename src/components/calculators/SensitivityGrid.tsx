@@ -30,11 +30,14 @@ export default function SensitivityGrid({ matrix, highlightCap, formatValue }: S
   const highlightCapIdx = nearestIndex(matrix.caps, highlightCap);
 
   return (
-    <div className="overflow-x-auto rounded-md border" style={{ borderColor: 'var(--color-border)' }}>
+    <div
+      className="overflow-x-auto rounded-md border"
+      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', boxShadow: 'var(--shadow-card)' }}
+    >
       <table className="w-full border-collapse text-sm">
         <caption className="sr-only">Implied value by cap rate and NOI change</caption>
         <thead>
-          <tr style={{ backgroundColor: 'var(--color-surface)' }}>
+          <tr style={{ backgroundColor: 'var(--color-muted)' }}>
             <th scope="col" className="px-3 py-2 text-left font-medium">Cap ＼ NOI</th>
             {matrix.noiFactors.map((f) => (
               <th key={f} scope="col" className="px-3 py-2 text-right font-medium">
@@ -46,7 +49,7 @@ export default function SensitivityGrid({ matrix, highlightCap, formatValue }: S
         <tbody>
           {matrix.caps.map((c, capIdx) => (
             <tr key={c} style={{ borderTop: '1px solid var(--color-border)' }}>
-              <th scope="row" className="px-3 py-2 text-left font-medium" style={{ backgroundColor: 'var(--color-surface)' }}>
+              <th scope="row" className="px-3 py-2 text-left font-medium" style={{ backgroundColor: 'var(--color-muted)' }}>
                 {formatNumber(c, 1)}%
               </th>
               {matrix.cells[capIdx].map((cell, noiIdx) => {

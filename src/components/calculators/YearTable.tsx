@@ -60,11 +60,14 @@ export default function YearTable<Row>({ rows, columns, caption, csvFileName, to
           </button>
         </div>
       )}
-      <div className="overflow-x-auto rounded-md border" style={{ borderColor: 'var(--color-border)' }}>
+      <div
+        className="overflow-x-auto rounded-md border"
+        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', boxShadow: 'var(--shadow-card)' }}
+      >
         <table className="w-full border-collapse text-sm">
           {caption && <caption className="sr-only">{caption}</caption>}
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-surface)' }}>
+            <tr style={{ backgroundColor: 'var(--color-muted)' }}>
               {columns.map((c) => (
                 <th
                   key={c.header}
@@ -72,7 +75,7 @@ export default function YearTable<Row>({ rows, columns, caption, csvFileName, to
                   className="sticky top-0 whitespace-nowrap px-3 py-2 font-medium"
                   style={{
                     textAlign: c.align ?? 'left',
-                    backgroundColor: 'var(--color-surface)',
+                    backgroundColor: 'var(--color-muted)',
                   }}
                 >
                   {c.header}

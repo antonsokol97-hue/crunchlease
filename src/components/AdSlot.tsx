@@ -35,6 +35,7 @@ export default function AdSlot({ id, placement, className = '' }: AdSlotProps) {
         minHeight,
         borderColor: 'var(--color-border)',
         backgroundColor: 'var(--color-surface)',
+        boxShadow: 'var(--shadow-card)',
         visibility: showPlaceholder ? 'visible' : 'hidden',
       }}
     >
