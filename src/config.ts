@@ -8,63 +8,76 @@ export const DOMAIN = 'https://TODO-DOMAIN.example';
 export const ADS_ENABLED = false;
 
 // Tool registry — the single source of truth for hub links, sitemap coverage,
-// and related-tool cross-links. SPEC.md Appendix A: "Architecture must not
-// assume 8 tools anywhere."
+// and related-tool cross-links (SPEC.md §1). Order matches the T1–T8 numbering
+// in the spec; slugs are the routes from §1's product-scope table.
 export const TOOL_REGISTRY: ToolMeta[] = [
   {
-    slug: 'load-factor-calculator',
-    name: 'Load Factor Calculator',
-    primaryKeyword: 'load factor calculator',
-    shortDescription: 'Convert between rentable and usable square feet and see the real cost per usable SF.',
-    status: 'planned',
-  },
-  {
-    slug: 'triple-net-lease-calculator',
+    slug: 'nnn-lease-calculator',
     name: 'Triple Net (NNN) Lease Calculator',
+    category: 'lease',
     primaryKeyword: 'triple net lease calculator',
     shortDescription: 'Add base rent, taxes, insurance, and CAM to see the true all-in cost of an NNN lease.',
     status: 'planned',
   },
   {
-    slug: 'cam-charges-calculator',
+    slug: 'cam-calculator',
     name: 'CAM Charges Calculator',
-    primaryKeyword: 'CAM charges calculator',
+    category: 'lease',
+    primaryKeyword: 'cam charges calculator',
     shortDescription: 'Estimate your pro-rata share of common area maintenance and reconcile year-end true-ups.',
     status: 'planned',
   },
   {
-    slug: 'ti-allowance-amortization-calculator',
-    name: 'TI Allowance Amortization Calculator',
-    primaryKeyword: 'TI allowance amortization calculator',
-    shortDescription: 'Amortize tenant improvement costs into rent and see the full monthly payment schedule.',
+    slug: 'tenant-improvement-calculator',
+    name: 'TI Allowance & Amortization Calculator',
+    category: 'lease',
+    primaryKeyword: 'tenant improvement allowance calculator',
+    shortDescription: 'Size a TI allowance against buildout cost and amortize the gap into monthly rent.',
     status: 'planned',
   },
   {
     slug: 'net-effective-rent-calculator',
     name: 'Net Effective Rent Calculator',
+    category: 'lease',
     primaryKeyword: 'net effective rent calculator',
     shortDescription: 'Turn face rent, free rent, and TI concessions into a single effective rent figure.',
     status: 'planned',
   },
   {
+    slug: 'load-factor-calculator',
+    name: 'Load Factor Calculator',
+    category: 'lease',
+    primaryKeyword: 'load factor calculator',
+    shortDescription: 'Convert between rentable and usable square feet and see the real cost per usable SF.',
+    status: 'live',
+  },
+  {
     slug: 'rent-escalation-calculator',
     name: 'Rent Escalation Calculator',
+    category: 'lease',
     primaryKeyword: 'rent escalation calculator',
-    shortDescription: 'Project year-by-year rent growth under fixed-percentage or fixed-step escalations.',
+    shortDescription: 'Project year-by-year rent growth under fixed %, step, CPI, or custom escalations.',
     status: 'planned',
   },
   {
-    slug: 'percentage-rent-calculator',
-    name: 'Percentage Rent Calculator',
-    primaryKeyword: 'percentage rent calculator',
-    shortDescription: 'Find the natural breakpoint and calculate percentage rent owed on top of base rent.',
+    slug: 'cap-rate-calculator',
+    name: 'Cap Rate Calculator',
+    category: 'investment',
+    primaryKeyword: 'cap rate calculator',
+    shortDescription: 'Solve cap rate, value, or required NOI, and stress-test value with a sensitivity matrix.',
     status: 'planned',
   },
   {
-    slug: 'parking-ratio-calculator',
-    name: 'Parking Ratio Calculator',
-    primaryKeyword: 'parking ratio calculator',
-    shortDescription: 'Check parking spaces per 1,000 SF against typical benchmarks, or size required spaces.',
+    slug: 'dscr-calculator',
+    name: 'DSCR Calculator',
+    category: 'investment',
+    primaryKeyword: 'dscr calculator',
+    shortDescription: 'Calculate debt service coverage and solve the maximum loan a property supports.',
     status: 'planned',
   },
 ];
+
+/** Look up a tool's metadata by slug. */
+export function getTool(slug: string): ToolMeta | undefined {
+  return TOOL_REGISTRY.find((tool) => tool.slug === slug);
+}

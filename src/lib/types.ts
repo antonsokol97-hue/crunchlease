@@ -1,7 +1,11 @@
+/** Lease-side (wedge) tools vs investment (hub) tools — drives cross-linking (SPEC.md §1, §3). */
+export type ToolCategory = 'lease' | 'investment';
+
 /** Metadata for one entry in the tool registry (src/config.ts). */
 export type ToolMeta = {
   slug: string;
   name: string;
+  category: ToolCategory;
   primaryKeyword: string;
   shortDescription: string;
   status: 'planned' | 'live';
