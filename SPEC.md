@@ -1,606 +1,642 @@
-# SPEC — CRE Lease Calculator Hub (MVP, Wave 1)
+# CRE Calculators — MVP Build Spec (v1.0)
 
-Product spec for a hub of commercial-real-estate lease calculators targeting US search traffic,
-monetized with display ads (AdSense → Mediavine ladder) and, later, direct CRE SaaS sponsorships.
-
-This document is the single source of truth for Claude Code sessions. Build **one tool per session**
-(see Appendix B for order, Appendix C for kickoff prompts). A tool is DONE only when its unit tests
-reproduce the Worked Example in its spec **to the cent**.
+Spec for the first 8 tools of a commercial real estate calculator hub.
+Audience of this document: Claude Code (implementation) + Anton (design & content review).
+Language of product: English (US market). All UI copy in this spec is final draft unless marked TBD.
 
 ---
 
-## 1. Goals & non-goals
+## 0. How to use this spec with Claude Code
 
-**Goals**
-- 8 interactive lease-side calculators (Tier C wedge), each on its own landing page, English, US market.
-- Every page is a self-contained SEO landing: calculator above the fold + 600–1,000 words of explanation + FAQ.
-- Differentiators over every competitor in the SERP: shareable URL state, scenario comparison, PDF export, embeddable widget.
-- Perfect Core Web Vitals (static-first, zero CLS from ads via reserved slots).
-
-**Non-goals (MVP)**
-- No accounts, no backend, no database. Everything is client-side.
-- No blog/articles. Tool pages + one hub page only.
-- No i18n. `en-US` only, USD only, square feet only.
-
-## 2. Tech stack
-
-- **Astro 5** (static output), **React** islands for calculators only (`client:load` on the calculator island, nothing else hydrates).
-- **TypeScript everywhere**, strict mode.
-- **Tailwind CSS 4** for styling. Design tokens in `src/styles/tokens.css` (placeholder values — see C.3, owner decision).
-- **Vitest** for unit tests of the formula engine.
-- Deploy: **Cloudflare Pages** (build command `astro build`, output `dist/`).
-- No other runtime dependencies unless unavoidable. No chart libs, no PDF libs, no state libs.
-
-## 3. Architecture
-
-```
-src/
-  calc-core/            # PURE TypeScript formula modules. No React, no DOM, no I/O.
-    loadFactor.ts
-    nnnLease.ts
-    camCharges.ts
-    tiAmortization.ts
-    netEffectiveRent.ts
-    rentEscalation.ts
-    percentageRent.ts
-    parkingRatio.ts
-    money.ts            # rounding helpers (see §3.1)
-    __tests__/          # one test file per module; fixtures = Worked Examples from this spec
-  components/
-    calculators/        # one React island per tool, thin UI over calc-core
-    AdSlot.tsx          # reserved-height ad container (see §6)
-    ShareBar.tsx        # copy-link, PDF, embed-code actions
-    ScenarioCompare.tsx # A/B scenario table (see §4.3)
-    Faq.astro           # renders FAQ + FAQPage JSON-LD from frontmatter data
-  layouts/
-    ToolLayout.astro    # h1, breadcrumb, calculator slot, content slot, related tools, schema
-  pages/
-    index.astro                          # hub: commercial lease calculators
-    <tool-slug>/index.astro              # 8 tool pages (slugs in each tool spec)
-    embed/<tool-slug>/index.astro        # chrome-less embed variant (see §4.4)
-  content/tools/*.mdx   # per-tool copy: intro, how-it-works, FAQ entries
-```
-
-**Rules**
-- `calc-core` functions take a typed input object, return a typed result object. Pure, deterministic, no rounding inside the math — rounding happens once at the presentation/result boundary (§3.1).
-- React islands do: state ↔ URL sync, validation messages, calling calc-core, rendering results. No formulas in components.
-
-### 3.1 Money & rounding conventions
-
-- Compute in floating point, full precision, round **only at output**.
-- Currency: round half-up to 2 decimals via `roundMoney(x)`. Display with `Intl.NumberFormat('en-US', {style:'currency', currency:'USD'})`.
-- $/SF values: 2 decimals. Percentages: 2 decimals. Ratios (load factor, parking ratio): 2 decimals.
-- Derived totals in Worked Examples are computed from the **rounded** payment where noted (matches financial-calculator convention).
-
-## 4. Shared calculator features (every tool)
-
-### 4.1 URL state (shareable scenarios)
-- Every input maps to a short query param (documented per tool).
-- On input change: debounce 300 ms → `history.replaceState` with current params.
-- On load: parse params → hydrate state; any invalid/missing param silently falls back to default.
-- "Copy link" button in ShareBar copies the canonical URL with params.
-
-### 4.2 Validation
-- Numeric fields clamp to documented ranges on blur; out-of-range typed values show inline error text (exact strings in each tool's Edge cases table) and suppress results until fixed.
-- Empty required field → results area shows a neutral "Enter values to calculate" state, never NaN.
-
-### 4.3 Scenario comparison
-- "Compare scenarios" toggle duplicates the current inputs into Scenario B side-by-side (stacked on mobile).
-- Compare table shows both result sets plus a delta column (absolute + %).
-- URL encodes both scenarios (`b_` prefix on Scenario B params).
-
-### 4.4 Embed widget
-- Route `/embed/<tool-slug>/`: calculator island only — no header/footer/ads/content.
-- Bottom bar inside the widget: "Powered by {SITE_NAME}" — a **dofollow** link to the tool's main page.
-- Main page ShareBar has "Embed" → modal with copy-ready snippet:
-  `<iframe src="https://{DOMAIN}/embed/<tool-slug>/" width="100%" height="620" style="border:0" loading="lazy" title="..."></iframe>`
-- Embed pages: `<meta name="robots" content="noindex">`, and send `postMessage` height updates for responsive iframes.
-
-### 4.5 PDF export
-- "Download PDF" = `window.print()` + `@media print` stylesheet. **No PDF library.**
-- Print view: site name + tool name, date, inputs summary table, results, scenario compare table if active, footer with canonical URL (with params). Nav, ads, FAQ, embed UI hidden.
-
-## 5. SEO & structured data
-
-- One primary keyword per page (listed per tool); title pattern: `{Primary Keyword, Title Case} — Free {Year-less} Tool | {SITE_NAME}`. H1 = primary keyword in natural phrasing.
-- JSON-LD per tool page: `WebApplication` (applicationCategory `FinanceApplication`, `offers: {price: 0, priceCurrency: USD}`), `FAQPage` (from the tool's FAQ entries), `BreadcrumbList`. Sitewide: `WebSite` + `Organization`.
-- Canonical = clean URL without query params.
-- Cross-linking: every tool page ends with a "Related calculators" block (3–4 links, specified per tool) + link back to the hub. The hub (`/`) links all 8 with one-sentence descriptions.
-- `sitemap.xml` (Astro integration) + `robots.txt`. OG image per tool from one template (C.3, owner decision).
-
-## 6. Ad slots (built now, filled later)
-
-- `<AdSlot id="..." />` renders a container with **fixed reserved height** and a subtle "Advertisement" label placeholder → zero CLS when a network is enabled later.
-- Placements per tool page:
-  - `below-results` — under the results card, 320×100 (mobile) / 728×90 (desktop), reserved height 100/90px.
-  - `mid-content` — between "How it works" and FAQ, responsive rect, reserved height 250px.
-  - `sidebar` — desktop ≥1280px only, 300×600 sticky, reserved height 600px.
-- Config flag `ADS_ENABLED=false` in `src/config.ts`; when false, containers render but stay as placeholders (visible in dev, `visibility:hidden` in prod). Embed pages and print view: **no ad slots**.
-
-## 7. Analytics
-
-- GA4 via `astro-google-analytics` or inline gtag snippet, `defer`. Events: `calculate` (per tool, fired once per param-change batch), `copy_link`, `pdf_export`, `embed_copy`, `scenario_compare_on`.
-- Search Console verification meta tag placeholder in `BaseLayout`.
-
-## 8. Content template (every tool page, in this order)
-
-1. H1 + one-sentence value proposition.
-2. **Calculator** (island) + ShareBar.
-3. AdSlot `below-results`.
-4. "What it calculates / definitions" (~150 words).
-5. "Formula" — the actual formula, rendered as `<code>` block + plain-English walkthrough of the Worked Example from this spec (~250 words).
-6. AdSlot `mid-content`.
-7. "How to interpret the result" — benchmarks/typical ranges (~200 words).
-8. FAQ — 5 questions (listed per tool), 40–80 words each. **Draft copy by Claude, final edit by Anton (C.3).**
-9. Related calculators block.
-
-## 9. Definition of done (per tool)
-
-- [ ] calc-core module + Vitest tests: Worked Example fixture passes **to the cent**; all Edge cases covered.
-- [ ] Island: URL state round-trips (load → edit → copy link → open in new tab reproduces state).
-- [ ] Scenario compare, PDF print view, embed route + snippet modal all functional.
-- [ ] Page content per §8 template; FAQ JSON-LD validates in Rich Results Test.
-- [ ] Lighthouse (mobile, prod build): Performance ≥ 95, CLS = 0.
-- [ ] Added to hub page + related-links of the tools that reference it.
+1. Drop this file into the repo root as `SPEC.md`.
+2. Use the kickoff prompt in **Appendix C** to scaffold the project.
+3. Implement one tool per session/prompt (see build order in Appendix B). Reference sections by number, e.g. "Implement Tool 3 per SPEC.md §T3, using shared components from §5."
+4. Every tool's **Worked example** doubles as a unit-test fixture. The formula engine is not done until its test matches the expected numbers exactly.
 
 ---
 
-# TOOL SPECS
+## 1. Product scope (MVP)
 
-Conventions: all currency USD; all areas in square feet (SF); RSF = rentable SF, USF = usable SF;
-`$/SF/yr` unless stated. Param names in `code` are the URL query keys.
+Eight standalone calculator pages + home page + 2 category hub pages:
+
+| # | Tool | Route | Tier |
+|---|------|-------|------|
+| T1 | Triple Net (NNN) Lease Calculator | `/nnn-lease-calculator/` | Lease (wedge) |
+| T2 | CAM Charges Calculator | `/cam-calculator/` | Lease (wedge) |
+| T3 | TI Allowance & Amortization Calculator | `/tenant-improvement-calculator/` | Lease (wedge) |
+| T4 | Net Effective Rent Calculator | `/net-effective-rent-calculator/` | Lease (wedge) |
+| T5 | Load Factor Calculator | `/load-factor-calculator/` | Lease (wedge) |
+| T6 | Rent Escalation Calculator | `/rent-escalation-calculator/` | Lease (wedge) |
+| T7 | Cap Rate Calculator | `/cap-rate-calculator/` | Investment (hub) |
+| T8 | DSCR Calculator | `/dscr-calculator/` | Investment (hub) |
+
+Category hubs: `/lease-calculators/` and `/investment-calculators/` — static index pages listing tools with one-paragraph descriptions. Home page `/` — directory of all tools grouped by category, one screen, no marketing fluff.
+
+Out of scope for MVP: user accounts, backend, saved deals server-side, 1031 tools (wave 2).
 
 ---
 
-## T1. Load Factor Calculator (Rentable vs Usable Square Feet)
+## 2. Tech stack & constraints
 
-- **Slug:** `/load-factor-calculator/` · **Primary keyword:** "load factor calculator" (secondary: "rentable vs usable square feet calculator")
-- **Why first:** simplest math; proves the whole architecture (URL state, compare, PDF, embed, schema) end to end.
+- **Astro 5** (static output) + **React islands** for calculator components only. Everything else ships zero JS.
+- **TypeScript** everywhere. **Tailwind CSS** with design tokens as CSS variables (Anton supplies tokens; components must be themeable via `var(--*)`, no hardcoded colors in components).
+- **`src/calc-core`** — pure TypeScript formula functions, no DOM, no React. One module per tool (`nnn.ts`, `cam.ts`, …). **Vitest** unit tests; fixtures = Worked examples from this spec.
+- No backend, no database. Deploy target: **Cloudflare Pages** (static).
+- No cookies except analytics consent handling. `localStorage` allowed only for unit-preference persistence (§6).
+- Dependencies: keep minimal. Charts: **Recharts** (lazy-loaded island) or plain SVG if simpler. PDF export: **print stylesheet + `window.print()`** (no PDF libs in MVP).
+
+---
+
+## 3. URL & site architecture
+
+- Tools live at root level with `-calculator` suffix (see §1). Trailing slash, lowercase, hyphenated.
+- Canonical URL on every page. `sitemap.xml` + `robots.txt` generated at build.
+- Breadcrumb: Home → Category → Tool (with `BreadcrumbList` schema).
+- **Internal linking rules (mandatory):**
+  - Every tool page links to 3–5 related tools inside the explainer prose (contextual, not just a widget).
+  - Every tool page ends with a "Related calculators" card grid (3 cards).
+  - Hub logic: T7 and T8 are linked from every lease tool at least once; lease tools cross-link within the tier.
+- **State in URL:** every input serializes to query params (debounced 300 ms, `history.replaceState`). Loading a URL with params restores state. Param keys are the `key` column in each tool's input table. Invalid params → fall back to defaults silently.
+- **Embed mode:** `?embed=1` renders calculator island only (no header/footer/content) + a fixed footer line: `Calculator by {SITE_NAME}` linking to the canonical page (`rel="dofollow"`). Each tool page has an "Embed this calculator" button that opens a modal with a copy-ready iframe snippet (width 100%, height per tool, `loading="lazy"`).
+
+---
+
+## 4. Page template (every tool page)
+
+Order is fixed:
+
+1. **Breadcrumb**
+2. **H1** (one per page, contains primary keyword) + one-sentence value prop (≤120 chars)
+3. **Calculator island** — above the fold on 375 px viewport; inputs left / results right on ≥1024 px, stacked on mobile; results update live on input (no "Calculate" button)
+4. **Results action row:** Copy link · Download PDF · Embed · Reset
+5. `<AdSlot id="below-results">` (§9)
+6. **"How it works"** — the formula in plain English + the actual formula rendered in a `<code>` block
+7. **Worked example** — same numbers as the default state
+8. **Benchmarks / typical ranges** table (from Appendix A; content marked `last_reviewed` in frontmatter)
+9. `<AdSlot id="mid-content">`
+10. **FAQ** — 4–5 questions, accordion, `FAQPage` schema
+11. **Related calculators** — 3 cards
+12. Footer + disclaimer line: "Educational estimates only — not financial, tax, or legal advice."
+
+Explainer content (items 6–10): 600–900 words total per page. Claude Code generates first draft **as separate `.mdx` content files** so Anton can edit without touching components. Tone: practitioner-direct, no filler, US CRE terminology.
+
+---
+
+## 5. Shared components & calc engine
+
+**Components (`/src/components/` — shared root; calculator islands under `calculators/`):**
+- `<CalcShell>` — layout, results panel, action row, URL-state sync, analytics wiring.
+- `<NumberInput>` — label, unit suffix, thousands separators while typing, min/max clamp with inline error, tooltip icon (`?`) with 1–2 sentence definition. Accepts `1,500,000`, `1500000`, `1.5m` is NOT supported (keep parsing strict).
+- `<UnitToggle>` — segmented control (e.g. $/SF/yr ↔ $/SF/mo).
+- `<ModeTabs>` — for tools with modes (T2, T3, T5, T7).
+- `<ResultCard>` — primary metric large, secondary metrics grid, semantic color state (ok / warn / fail) driven by tool logic.
+- `<YearTable>` — schedule tables with sticky header, CSV download button.
+- `<SensitivityGrid>` — T7 matrix, base cell highlighted.
+- `<ScenarioCompare>` — "Add scenario B" duplicates current inputs into a second column; both columns editable; delta row at bottom. MVP: max 2 scenarios. Available on T1, T4, T5, T8.
+- `<EmbedModal>`, `<AdSlot>`.
+
+**calc-core rules:**
+- Pure functions: `(inputs: TInput) => TOutput`. No rounding inside math; round only at display (§6).
+- Every function exports its own `TInput`/`TOutput` types and a `DEFAULTS` const (the values in each tool's input table).
+- Guard clauses return typed error states (`{ ok: false, error: 'LEASED_SF_EXCEEDS_BUILDING' }`), never `NaN`/`Infinity` to the UI.
+
+---
+
+## 6. Conventions
+
+- **Currency:** USD, `Intl.NumberFormat('en-US')`. Dollars: 0 decimals in results (`$98,100`), 2 decimals for $/SF (`$32.70`). Rates/ratios: 2 decimals (`7.50%`, `1.45x`).
+- **Units:** default rent basis is **$/SF/yr**. Global toggle to $/SF/mo (SoCal convention) persisted in `localStorage` key `rentUnit`; conversion is ×12 / ÷12; both values always shown in results ("$32.70 /SF/yr · $2.73 /SF/mo").
+- **Time:** years are 1-indexed in schedules; escalations apply on each 12-month anniversary unless a tool says otherwise.
+- **SF** = square feet, RSF = rentable, USF = usable, GLA = gross leasable area.
+- Percent inputs are whole numbers in UI (`3` = 3%), converted to decimals in calc-core.
+
+---
+
+## 7. Validation & error UX
+
+- Inline validation on blur + on URL-param load. Errors never block typing.
+- Results panel has three states: **valid** (numbers), **incomplete** (grey placeholders "—"), **invalid** (single sentence explaining which rule failed).
+- Cross-field rules are listed per tool under **Edge cases**. Each rule has an error string in the spec — use verbatim.
+
+## 8. SEO & schema
+
+- `<title>` 50–60 chars (given per tool), meta description 150–160 chars (given per tool), OG image 1200×630 generated per tool from a template (tool name + primary metric visual).
+- Schema per tool page: `WebApplication` (name, description, `applicationCategory: FinanceApplication`, `offers: price 0`) + `FAQPage` + `BreadcrumbList`. JSON-LD in `<head>`.
+- One `<h1>`; H2s per template §4; keyword variants (given per tool) appear naturally in H2s/prose, no stuffing.
+
+## 9. Performance & ads readiness
+
+- Targets: LCP < 1.0 s, CLS < 0.05, JS ≤ 80 KB gz per page (island + charts lazy).
+- `<AdSlot>` renders a fixed-height reserved container from day one (mobile 320×100, desktop 728×90; `min-height` set) so enabling AdSense/Ezoic later causes **zero CLS**. Slots ship empty in MVP behind an `ADS_ENABLED` env flag.
+- Fonts: max 2 families, `font-display: swap`, self-hosted.
+
+## 10. Analytics
+
+GA4 via lightweight loader after consent. Events: `calc_input_change` (tool, debounced 1/session per field), `calc_result_valid` (tool), `pdf_export`, `csv_export`, `embed_copied`, `share_link_copied`, `scenario_added`, `related_click` (from, to). Consent banner: minimal, decline = no GA.
+
+---
+# Tool specs
+
+## T1 — Triple Net (NNN) Lease Calculator
+
+**Route:** `/nnn-lease-calculator/`
+**Primary keyword:** triple net lease calculator · **Variants:** nnn calculator, nnn lease calculator, commercial triple net calculator
+**Meta title:** `NNN Lease Calculator — Triple Net Rent Cost Per SF & Month`
+**Meta description:** `Calculate true triple net lease costs: base rent plus taxes, insurance and CAM per SF, monthly and annual totals, with escalations over the full lease term.`
+**User & intent:** tenant, broker, or landlord pricing a space; wants total occupancy cost, not just face rent.
 
 ### Inputs
-| Field | Param | Type | Default | Range | Notes |
+
+| Field | key | Type | Default | Range | Notes |
 |---|---|---|---|---|---|
-| Usable SF | `usf` | number | 4,000 | 100–1,000,000 | tenant's private space |
-| Rentable SF | `rsf` | number | 4,600 | 100–1,200,000 | USF + common-area share |
-| Quoted rent ($/RSF/yr) | `rent` | number | 28.00 | 0–500 | optional; 0 hides rent outputs |
-
-Mode toggle `mode` = `sf` (default, above) or `lf`: in `lf` mode user enters USF + load factor `lf` (1.00–2.00, default 1.15) and RSF is derived (`rsf = usf × lf`).
-
-### Formulas
-```
-loadFactor   = rsf / usf
-addOnPct     = (rsf - usf) / usf                  // = loadFactor - 1
-annualRent   = rsf × rent
-monthlyRent  = annualRent / 12
-rentPerUsf   = annualRent / usf                   // the "real" price of usable space
-```
+| Input mode | `mode` | tabs | `psf` | `psf` \| `totals` | Per-SF rates vs building totals + pro-rata |
+| Leased area (SF) | `sf` | number | 3,000 | 100–2,000,000 | |
+| Base rent | `base` | number | 24.00 | 0–500 | Unit per global toggle (§6), stored as $/SF/yr |
+| Property taxes | `tax` | number | 3.50 | 0–50 | psf mode, $/SF/yr |
+| Insurance | `ins` | number | 1.20 | 0–20 | psf mode |
+| CAM | `cam` | number | 4.00 | 0–50 | psf mode |
+| Other recoverables | `other` | number | 0 | 0–50 | psf mode, collapsed by default |
+| Building area (RSF) | `bldg` | number | 10,000 | ≥ `sf` | totals mode |
+| Annual taxes / insurance / CAM / other ($) | `taxT` `insT` `camT` `otherT` | number | 35,000 / 12,000 / 40,000 / 0 | ≥0 | totals mode |
+| Admin fee on CAM (%) | `admin` | number | 0 | 0–25 | Tooltip: "Management/admin fee landlords add to CAM, typically 10–15%." |
+| Base rent escalation (%/yr) | `esc` | number | 3 | 0–15 | |
+| NNN growth assumption (%/yr) | `nnng` | number | 3 | 0–15 | Tooltip: "NNN charges float on actual expenses; this models expected growth." |
+| Lease term (years) | `term` | number | 5 | 1–30 | |
 
 ### Outputs
-Load factor (2 dp), add-on % (2 dp), annual rent, monthly rent, effective $/USF/yr.
-
-### Edge cases
-| Condition | Behavior |
-|---|---|
-| `rsf < usf` | Error under RSF field: "Rentable area is normally equal to or larger than usable area. Double-check which number is which." Results suppressed. |
-| `usf = 0` or empty | Neutral empty state (no NaN). |
-| `rent = 0` | Show load factor + add-on only; hide rent rows. |
-
-### Worked Example (test fixture)
-USF 4,000 · RSF 4,600 · rent $28.00/RSF/yr →
-**loadFactor = 1.15 · addOnPct = 15.00% · annualRent = $128,800.00 · monthlyRent = $10,733.33 · rentPerUsf = $32.20**
-
-### FAQ (5)
-1. What is a load factor in commercial real estate?
-2. What's the difference between rentable and usable square feet?
-3. What is a typical load factor for office buildings? (answer: commonly ~1.10–1.20; higher in buildings with large lobbies/amenities)
-4. How do I compare two spaces with different load factors? (answer: compare $/USF — point at this tool's rentPerUsf output and Scenario Compare)
-5. Is load factor the same as loss factor? (answer: related but not identical; loss factor = (RSF−USF)/RSF)
-
-### Related tools
-NNN Lease (T2), Net Effective Rent (T5), Rent Escalation (T6).
-
----
-
-## T2. Triple Net (NNN) Lease Calculator
-
-- **Slug:** `/triple-net-lease-calculator/` · **Primary keyword:** "triple net lease calculator" (secondary: "NNN calculator", "NNN lease cost calculator")
-- **Heaviest Tier-C target — the SERP is local brokers and thin tool pages.**
-
-### Inputs
-| Field | Param | Type | Default | Range | Notes |
-|---|---|---|---|---|---|
-| Leased area (SF) | `sf` | number | 2,500 | 100–1,000,000 | |
-| Base rent ($/SF/yr) | `base` | number | 24.00 | 0–500 | |
-| Property taxes ($/SF/yr) | `tax` | number | 3.50 | 0–100 | |
-| Insurance ($/SF/yr) | `ins` | number | 1.25 | 0–100 | |
-| CAM ($/SF/yr) | `cam` | number | 4.75 | 0–100 | link to T3 for computing this |
-
-Toggle `unit` = `psf` (default) or `annual`: in `annual` mode tax/ins/CAM are entered as building-total dollars with a pro-rata share % field `share` (0–100, default 100) — each converts to $/SF as `total × share% / sf` before the common formulas run.
+- NNN charges: $/SF/yr, $/mo, $/yr (year 1)
+- Total (gross-equivalent) rent: $/SF/yr, $/mo, $/yr (year 1)
+- Pro-rata share % (totals mode only)
+- Year-by-year table: base $/SF · NNN $/SF · gross $/SF · monthly $ · annual $
+- Total lease obligation over term
+- Stacked bar chart: base vs NNN per year
+- ScenarioCompare enabled
 
 ### Formulas
 ```
-nnnPerSf        = tax + ins + cam
-totalPerSf      = base + nnnPerSf
-annualBase      = base × sf
-annualNnn       = nnnPerSf × sf
-annualTotal     = totalPerSf × sf
-monthlyTotal    = annualTotal / 12
-nnnShareOfTotal = annualNnn / annualTotal
+basePSF(y)   = base × (1 + esc/100)^(y−1)
+psf mode:    nnnPSF(1) = tax + ins + cam×(1 + admin/100) + other
+totals mode: proRata   = sf / bldg
+             nnnPSF(1) = (taxT + insT + camT×(1 + admin/100) + otherT) × proRata / sf
+nnnPSF(y)    = nnnPSF(1) × (1 + nnng/100)^(y−1)
+grossPSF(y)  = basePSF(y) + nnnPSF(y)
+annual(y)    = grossPSF(y) × sf        monthly(y) = annual(y) / 12
+totalObligation = Σ annual(y), y = 1..term
 ```
+
+### Edge cases
+- `sf > bldg` → error: `Leased area can't exceed building area.`
+- `admin > 15` → non-blocking warning: `Admin fees above 15% are unusual — double-check the lease.`
+- All currency fields ≥ 0; empty field = incomplete state, not 0.
+- $/SF/mo unit toggle converts base AND all NNN rate fields consistently.
+
+### Differentiators (must ship)
+Scenario compare (two term sheets side by side) · full-term obligation number · escalation modeled separately for base and NNN · PDF export with year table · embed.
+
+### Content outline
+H2s: How triple net (NNN) leases work · How to calculate NNN cost per square foot · Worked example (defaults) · What's included in each "net" · Typical NNN expense ranges (Appendix A.5) · FAQ.
+FAQ: What does NNN mean in a lease? · Is NNN paid monthly or annually? · What's a typical NNN charge per square foot? · Who pays for roof and structure in a triple net lease? · NNN vs gross lease — which is cheaper?
+
+### Worked example (= test fixture `nnn.default`)
+Defaults → NNN **$8.70/SF/yr**, gross **$32.70/SF/yr**, **$8,175/mo**, **$98,100/yr**; 5-yr total obligation (both escalating 3%) = **$520,826**.
+
+---
+
+## T2 — CAM Charges Calculator
+
+**Route:** `/cam-calculator/`
+**Primary keyword:** cam charges calculator · **Variants:** common area maintenance calculator, cam reconciliation calculator, cam fees commercial lease
+**Meta title:** `CAM Charges Calculator — Pro-Rata Share & Reconciliation`
+**Meta description:** `Work out your pro-rata CAM charges per SF and per month, model annual increases with caps, and reconcile estimated payments against actual year-end costs.`
+**User & intent:** tenant checking a landlord's CAM bill or budgeting; landlord/PM setting estimates.
+
+### Inputs
+
+| Field | key | Type | Default | Range | Notes |
+|---|---|---|---|---|---|
+| Mode | `mode` | tabs | `estimate` | `estimate` \| `reconcile` | |
+| Tenant area (SF) | `sf` | number | 2,500 | 100–2,000,000 | |
+| Building GLA (SF) | `gla` | number | 25,000 | ≥ `sf` | |
+| Total annual CAM ($) | `camT` | number | 125,000 | ≥0 | Accordion "Itemize" splits into: landscaping, snow removal, parking/lot repairs, common utilities, security, janitorial, other — sum overrides `camT` |
+| Admin fee (%) | `admin` | number | 10 | 0–25 | |
+| Annual CAM growth (%) | `growth` | number | 4 | 0–20 | estimate mode |
+| Projection (years) | `years` | number | 5 | 1–15 | estimate mode |
+| CAM cap | `cap` | select | `none` | none \| non-cumulative \| cumulative | estimate mode |
+| Cap (%) | `capPct` | number | 5 | 0–15 | shown if cap ≠ none |
+| Monthly estimate paid ($) | `paid` | number | 1,100 | ≥0 | reconcile mode |
+| Months paid | `months` | number | 12 | 1–12 | reconcile mode |
+| Actual annual CAM ($) | `actual` | number | 138,000 | ≥0 | reconcile mode |
 
 ### Outputs
-NNN expenses $/SF, all-in $/SF, annual base / NNN / total, monthly total, NNN as % of total occupancy cost.
-
-### Edge cases
-| Condition | Behavior |
-|---|---|
-| All of tax/ins/cam = 0 | Info note: "With no pass-through expenses this is effectively a gross lease — the calculator still works, NNN = $0." |
-| `sf = 0` in `annual` mode | Error: "Enter the leased area to convert building totals to per-SF costs." |
-| `share > 100` | Clamp to 100 with inline note. |
-
-### Worked Example (test fixture)
-2,500 SF · base $24.00 · tax $3.50 · ins $1.25 · CAM $4.75 →
-**nnnPerSf = $9.50 · totalPerSf = $33.50 · annualBase = $60,000.00 · annualNnn = $23,750.00 · annualTotal = $83,750.00 · monthlyTotal = $6,979.17 · nnnShareOfTotal = 28.36%**
-
-### FAQ (5)
-1. What does NNN mean in a lease?
-2. What expenses are included in triple net charges?
-3. How do I calculate the total cost of a NNN lease? (walk the example)
-4. Are NNN expenses negotiable? (caps, exclusions, audit rights — high-level)
-5. What's the difference between NNN, gross, and modified gross leases?
-
-### Related tools
-CAM Charges (T3), Net Effective Rent (T5), Percentage Rent (T7), Load Factor (T1).
-
----
-
-## T3. CAM Charges Calculator
-
-- **Slug:** `/cam-charges-calculator/` · **Primary keyword:** "CAM charges calculator" (secondary: "common area maintenance calculator", "CAM reconciliation calculator")
-
-### Inputs
-| Field | Param | Type | Default | Range | Notes |
-|---|---|---|---|---|---|
-| Tenant leased SF | `tsf` | number | 3,000 | 100–1,000,000 | |
-| Total property leasable SF | `psf` | number | 40,000 | 100–10,000,000 | GLA |
-| Annual CAM budget ($) | `budget` | number | 260,000 | 0–100,000,000 | building total |
-| Admin/management fee (%) | `fee` | number | 15 | 0–30 | applied on tenant's CAM share |
-| Monthly CAM already paid ($) | `paid` | number | 0 | 0–1,000,000 | optional, enables reconciliation output |
+- Estimate mode: pro-rata %, tenant CAM $/yr, $/SF/yr, $/mo; N-year table uncapped vs capped; cumulative savings from cap.
+- Reconcile mode: tenant share of actuals, total paid, **balance due / credit** with plain-English verdict line.
 
 ### Formulas
 ```
-proRataShare  = tsf / psf
-tenantCam     = budget × proRataShare × (1 + fee/100)
-camPerSf      = tenantCam / tsf
-monthlyCam    = tenantCam / 12
-reconciliation = tenantCam - paid × 12        // >0: tenant owes; <0: credit due
+proRata        = sf / gla
+billed(1)      = camT × (1 + admin/100) × proRata
+uncapped(y)    = billed(1) × (1 + growth/100)^(y−1)
+non-cumulative cap: allowed(1) = uncapped(1); allowed(y) = min(uncapped(y), allowed(y−1) × (1 + capPct/100))
+cumulative cap:     allowed(y) = min(uncapped(y), allowed(1) × (1 + capPct/100)^(y−1))
+reconcile:     share = actual × (1 + admin/100) × proRata
+               balance = share − paid × months   (>0 due · <0 credit)
 ```
+
+### Edge cases
+- `sf > gla` → error: `Tenant area can't exceed building GLA.`
+- Itemized sum of 0 with itemize open → incomplete state.
+- Tooltip disclosure (verbatim): `Caps usually apply to controllable CAM only (excludes taxes, insurance, snow, utilities). v1 applies the cap to the full CAM figure — read your lease.`
+- v1.1 backlog: controllable/uncontrollable split, occupancy gross-up.
+
+### Differentiators
+Cap modeling with both compounding types (nobody in the SERP has this) · reconciliation verdict · itemized CAM accordion · CSV of projection table.
+
+### Content outline
+H2s: What CAM charges cover · How pro-rata share works · CAM caps: cumulative vs non-cumulative (with the two formulas) · Reconciliation: why your year-end bill differs · Typical CAM ranges & admin fees · FAQ.
+FAQ: What is included in CAM charges? · How is my pro-rata share calculated? · What is a CAM reconciliation? · What is a typical CAM admin fee? · Can I negotiate a CAM cap?
+
+### Worked example (= `cam.default`)
+Estimate: pro-rata **10.00%**, billed **$13,750/yr** = **$5.50/SF/yr** = **$1,145.83/mo**.
+Reconcile: share = 138,000 × 1.10 × 0.10 = **$15,180**; paid **$13,200**; **balance due $1,980**.
+
+---
+
+## T3 — TI Allowance & Amortization Calculator
+
+**Route:** `/tenant-improvement-calculator/`
+**Primary keyword:** tenant improvement allowance calculator · **Variants:** ti amortization calculator, ti allowance, amortized tenant improvements
+**Meta title:** `Tenant Improvement Allowance & TI Amortization Calculator`
+**Meta description:** `Size your TI allowance, compare it to buildout cost, and see the monthly rent add-on if the landlord amortizes the gap into the lease — with full schedule.`
+**User & intent:** tenant/broker in LOI negotiation; wants (a) is the TI offer fair, (b) what does amortizing the shortfall cost.
+
+### Inputs
+
+Tab A — Allowance vs cost:
+
+| Field | key | Default | Range | Notes |
+|---|---|---|---|---|
+| Space (SF) | `sf` | 3,000 | 100–500,000 | shared with Tab B |
+| TI allowance ($/SF) | `tia` | 30 | 0–500 | |
+| Estimated buildout cost ($/SF) | `cost` | 45 | 0–800 | |
+| Space type | `type` | `office-2g` | office-2g \| office-wb \| medical \| retail \| restaurant \| industrial | drives benchmark band highlight (Appendix A.3) |
+
+Tab B — Amortization:
+
+| Field | key | Default | Range | Notes |
+|---|---|---|---|---|
+| Amount to amortize ($) | `p` | auto = gap from Tab A, editable | 0–10,000,000 | |
+| Interest rate (%/yr) | `rate` | 8 | 0–20 | |
+| Term (months) | `n` | 60 | 6–240 | |
+| Lease term (months, optional) | `lease` | 60 | 6–240 | warning trigger only |
 
 ### Outputs
-Pro-rata share %, annual CAM, $/SF, monthly CAM; if `paid > 0`: year-end reconciliation (owed/credit, labeled).
-
-### Edge cases
-| Condition | Behavior |
-|---|---|
-| `tsf > psf` | Error: "Tenant area can't exceed the property's total leasable area." Results suppressed. |
-| `psf = 0` | Neutral empty state. |
-| `reconciliation` within ±$1 | Show "Fully reconciled — no true-up needed." |
-
-### Worked Example (test fixture)
-Tenant 3,000 SF · property 40,000 SF · budget $260,000 · fee 15% · paid $0 →
-**proRataShare = 7.50% · tenantCam = $22,425.00 · camPerSf = $7.48 ($7.475 unrounded) · monthlyCam = $1,868.75**
-Fixture 2 (reconciliation): same, `paid` = 1,700 → **reconciliation = +$2,025.00 (tenant owes)**.
-
-### FAQ (5)
-1. What are CAM charges?
-2. How is my pro-rata share calculated?
-3. What is a CAM admin fee and what's typical? (commonly 10–15%)
-4. What is CAM reconciliation / true-up?
-5. Can I cap my CAM increases? (fixed vs. capped vs. uncapped, cumulative vs. compounding — high-level)
-
-### Related tools
-NNN Lease (T2), Rent Escalation (T6), Load Factor (T1).
-
----
-
-## T4. Tenant Improvement (TI) Allowance Amortization Calculator
-
-- **Slug:** `/ti-allowance-amortization-calculator/` · **Primary keyword:** "TI allowance amortization calculator" (secondary: "tenant improvement amortization calculator", "amortized TI calculator")
-
-### Inputs
-| Field | Param | Type | Default | Range | Notes |
-|---|---|---|---|---|---|
-| Amount to amortize ($) | `amt` | number | 150,000 | 0–50,000,000 | build-out cost above landlord's allowance |
-| Annual interest rate (%) | `rate` | number | 8.0 | 0–25 | |
-| Term (months) | `term` | number | 60 | 1–360 | usually = lease term |
-| Leased area (SF) | `sf` | number | 5,000 | 0–1,000,000 | optional; 0 hides $/SF outputs |
+- Tab A: total allowance $, total cost $, **gap $ and $/SF**, benchmark verdict line ("Your $30/SF offer sits within the typical range for second-generation office").
+- Tab B: **monthly payment**, rent impact **$/SF/yr**, total repaid, total interest, amortization schedule (accordion: month, payment, interest, principal, balance), CSV.
 
 ### Formulas
 ```
+totalTIA = sf × tia        totalCost = sf × cost        gap = max(0, totalCost − totalTIA)
 r = rate/100/12
-monthlyPayment = r === 0 ? amt/term : amt × r / (1 - (1+r)^-term)
-totalRepaid    = roundMoney(monthlyPayment) × term      // from ROUNDED payment
-totalInterest  = totalRepaid - amt
-annualAddedRent = roundMoney(monthlyPayment) × 12
-addedRentPerSf  = annualAddedRent / sf                  // only if sf > 0
+PMT = r = 0 ? p / n : p × r / (1 − (1 + r)^−n)
+rentAddPSFyr = PMT × 12 / sf
+schedule: interest(m) = balance(m−1) × r; principal(m) = PMT − interest(m)
 ```
-Amortization schedule (differentiator): per-month row `{month, payment, interest = balance×r, principal = payment−interest, balance}` — collapsible table, included in PDF.
-
-### Outputs
-Monthly payment, added annual rent, added rent $/SF/yr, total repaid, total interest, schedule.
 
 ### Edge cases
-| Condition | Behavior |
-|---|---|
-| `rate = 0` | Straight-line: payment = amt/term; interest = $0; note "0% means the landlord is simply spreading cost, not financing it." |
-| `term = 0` or empty | Neutral empty state. |
-| `amt = 0` | Neutral empty state. |
+- `gap = 0` → Tab A success state: `Your allowance covers the buildout — nothing to amortize.` Tab B stays usable with manual `p`.
+- `n > lease` → warning: `Amortization longer than the lease term is rare — landlords typically match them.`
+- `rate = 0` → straight-line PMT.
 
-### Worked Example (test fixture)
-$150,000 · 8.0% · 60 months · 5,000 SF →
-**monthlyPayment = $3,041.46 · annualAddedRent = $36,497.52 · addedRentPerSf = $7.30 ($7.2995 unrounded) · totalRepaid = $182,487.60 · totalInterest = $32,487.60**
-Fixture 2 (zero rate): $120,000 · 0% · 48 mo → **monthlyPayment = $2,500.00 · totalInterest = $0.00**
+### Differentiators
+Two linked modes (SERP has them only separately) · benchmark bands by space type · full schedule + CSV · rent-impact in $/SF/yr, the unit brokers actually negotiate in.
 
-### FAQ (5)
-1. What is a tenant improvement allowance?
-2. What does it mean to amortize TI into rent?
-3. What interest rate do landlords charge on amortized TI? (commonly ~7–10%, negotiable)
-4. Is amortized TI the same as a loan? (economically yes; watch what happens on early termination)
-5. Should I amortize TI or pay for the build-out upfront? (cost-of-capital comparison — point at Scenario Compare)
+### Content outline
+H2s: What a TI allowance is (and isn't) · Typical TI allowances by space type · When landlords amortize TI — and what it really costs · Worked example · Negotiation levers that move TI (term, credit, trading free rent) · FAQ.
+FAQ: What is a typical tenant improvement allowance? · Is a TI allowance free money? · What does amortized TI mean? · What interest rate do landlords use to amortize TI? · Does TI allowance cover furniture?
 
-### Related tools
-Net Effective Rent (T5), NNN Lease (T2), Rent Escalation (T6).
+### Worked example (= `ti.default`)
+Tab A: allowance **$90,000**, cost **$135,000**, gap **$45,000** ($15/SF).
+Tab B: p=45,000, 8%, 60 mo → PMT **$912.44/mo**, rent impact **$3.65/SF/yr**, total repaid **$54,746**, interest **$9,746**.
 
 ---
 
-## T5. Net Effective Rent Calculator
+## T4 — Net Effective Rent Calculator
 
-- **Slug:** `/net-effective-rent-calculator/` · **Primary keyword:** "net effective rent calculator" (secondary: "NER calculator", "effective rent calculator commercial")
+**Route:** `/net-effective-rent-calculator/`
+**Primary keyword:** net effective rent calculator · **Variants:** effective rent calculator, NER commercial real estate, free rent calculator
+**Meta title:** `Net Effective Rent Calculator — Free Rent, TI & Escalations`
+**Meta description:** `Turn face rent into net effective rent: model free months, escalations, TI and concessions over the full term, straight-line or NPV. See the true deal economics.`
+**User & intent:** broker/landlord comparing deal structures; tenant checking how good a "3 months free" offer really is.
 
 ### Inputs
-| Field | Param | Type | Default | Range | Notes |
-|---|---|---|---|---|---|
-| Face/base rent ($/SF/yr) | `rent` | number | 30.00 | 0–500 | year-1 rate |
-| Lease term (months) | `term` | number | 60 | 12–360 | |
-| Free rent (months) | `free` | number | 4 | 0–36 | valued at year-1 rate |
-| TI allowance ($/SF) | `ti` | number | 25.00 | 0–500 | landlord concession |
-| Annual escalation (%) | `esc` | number | 0 | 0–15 | applied each lease year |
 
-Straight-line (undiscounted) NER — the number brokers quote. Note in content: this is not a DCF.
+| Field | key | Default | Range | Notes |
+|---|---|---|---|---|
+| Term (months) | `term` | 60 | 12–360 | |
+| Area (SF) | `sf` | 5,000 | 100–2,000,000 | |
+| Face rent ($/SF/yr) | `face` | 30 | 0–500 | |
+| Escalation (%/yr) | `esc` | 3 | 0–15 | applied each 12-mo anniversary |
+| Free rent (months) | `free` | 3 | 0–term−1 | abates base rent, applied at start of term at year-1 rate |
+| TI allowance ($/SF) | `tia` | 30 | 0–500 | |
+| Other concessions ($) | `conc` | 0 | ≥0 | moving allowance etc. |
+| NPV mode | `npv` | off | toggle | advanced accordion |
+| Discount rate (%/yr) | `disc` | 8 | 0–20 | NPV mode only |
+
+### Outputs
+- **NER $/SF/yr** (headline) + discount to face % ("18.8% below the $30 face rate")
+- Total scheduled rent, free-rent value, TI + concessions, total collected
+- Monthly rent timeline chart (shows the free-month gap and escalation steps)
+- NPV mode: NPV of deal, NPV-equivalent NER
+- ScenarioCompare enabled (this is THE compare-two-offers tool)
 
 ### Formulas
 ```
-years = term / 12                              // fractional years allowed
-nominalRentPerSf = Σ over lease years of rent × (1+esc/100)^(yearIndex)   // partial last year pro-rated
-freeRentValue    = (free / 12) × rent          // at year-1 rate
-netTotalPerSf    = nominalRentPerSf - freeRentValue - ti
-nerPerSfPerYear  = netTotalPerSf / years
-effectiveDiscount = (rent - nerPerSfPerYear) / rent
+Month engine, m = 1..term:
+scheduled(m) = face/12 × sf × (1 + esc/100)^floor((m−1)/12)
+freeValue    = Σ scheduled(m) for m = 1..free
+collected    = Σ scheduled(m) − freeValue
+NER_straight ($/SF/yr) = (collected − tia×sf − conc) / (term/12) / sf
+
+NPV mode: i = disc/100/12
+NPV = −(tia×sf + conc) + Σ [ cash(m) / (1+i)^m ],  cash(m) = scheduled(m) or 0 if free
+levelPmt = NPV × i / (1 − (1+i)^−term)
+NER_npv ($/SF/yr) = levelPmt × 12 / sf
 ```
 
-### Outputs
-NER $/SF/yr, total concession value $/SF, nominal vs effective total over term, discount off face %.
-
 ### Edge cases
-| Condition | Behavior |
-|---|---|
-| `free ≥ term` | Error: "Free rent can't equal or exceed the lease term." |
-| `netTotalPerSf < 0` | Warning: "Concessions exceed total rent — the landlord would be paying the tenant. Check inputs." Results still shown. |
-| `term` not multiple of 12 | Pro-rate final partial year at that year's escalated rate. |
+- `free ≥ term` → error: `Free rent can't cover the whole term.`
+- Negative NER (concessions exceed rent) → show value in fail color + line: `Concessions exceed total rent — this deal loses money on paper.`
+- `disc = 0` → NPV equals straight-line; hide duplicate output.
+- v1 models base rent only; tooltip: `NNN charges usually continue during free-rent periods; model them in the NNN calculator.` (contextual link to T1)
 
-### Worked Example (test fixture)
-$30.00 · 60 mo · 4 mo free · TI $25.00 · esc 0% →
-**nominalRentPerSf = $150.00 · freeRentValue = $10.00 · netTotalPerSf = $115.00 · nerPerSfPerYear = $23.00 · effectiveDiscount = 23.33%**
-Fixture 2 (escalations): same but esc 3% → nominal = 30 × (1+1.03+1.03²+1.03³+1.03⁴) = **$159.2741 → netTotal = $124.2741 → NER = $24.85** (24.8548 unrounded).
+### Differentiators
+Month-level engine (competitors do napkin math) · NPV toggle · timeline chart · scenario compare of two term sheets · landlord/tenant framing in content.
 
-### FAQ (5)
-1. What is net effective rent?
-2. What's the difference between face rent and effective rent?
-3. How do free rent and TI change what I actually pay?
-4. Why do landlords give concessions instead of lowering face rent? (protects building valuation & comps)
-5. Does this calculator discount cash flows? (no — straight-line, industry-standard quoting convention)
+### Content outline
+H2s: Face rent vs net effective rent · How free rent and TI change deal economics · Straight-line vs NPV effective rent · Worked example · How landlords use NER (and why face rates stay high) · FAQ.
+FAQ: What is net effective rent? · How do I calculate NER with free rent? · Does NER include TI allowance? · Why do landlords give free rent instead of lower rent? · What discount rate should I use?
 
-### Related tools
-TI Amortization (T4), Rent Escalation (T6), NNN Lease (T2), Load Factor (T1).
+### Worked example (= `ner.default`)
+Defaults → scheduled 5-yr rent **$796,370**, free value **$37,500**, collected **$758,870**; NER = (758,870 − 150,000)/5/5,000 = **$24.35/SF/yr**, **18.8% below face**.
 
 ---
+## T5 — Load Factor Calculator
 
-## T6. Rent Escalation Calculator
-
-- **Slug:** `/rent-escalation-calculator/` · **Primary keyword:** "rent escalation calculator" (secondary: "annual rent increase calculator commercial", "rent bump calculator")
+**Route:** `/load-factor-calculator/`
+**Primary keyword:** load factor calculator · **Variants:** rentable vs usable square footage, loss factor calculator, core factor commercial real estate
+**Meta title:** `Load Factor Calculator — Rentable vs Usable Square Feet`
+**Meta description:** `Convert between usable and rentable square feet, get load and loss factors, and see what a quoted rate really costs per usable foot across two buildings.`
+**User & intent:** tenant/broker touring space; confused by RSF vs USF; wants true cost comparison.
 
 ### Inputs
-| Field | Param | Type | Default | Range | Notes |
-|---|---|---|---|---|---|
-| Starting rent ($/SF/yr) | `rent` | number | 25.00 | 0–500 | |
-| Escalation type | `etype` | enum | `pct` | `pct` \| `fixed` | % per year, or fixed $ step |
-| Escalation rate (%/yr) | `esc` | number | 3.0 | 0–15 | when `etype=pct` |
-| Fixed step ($/SF/yr) | `step` | number | 0.75 | 0–50 | when `etype=fixed` |
-| Term (years) | `years` | integer | 10 | 1–30 | |
-| Leased area (SF) | `sf` | number | 0 | 0–1,000,000 | optional; >0 adds annual $ column |
+
+| Field | key | Default | Range | Notes |
+|---|---|---|---|---|
+| Solve for | `solve` | `lf` | `lf` \| `rsf` \| `usf` | segmented control |
+| Usable SF | `usf` | 5,000 | 100–2,000,000 | hidden when solving for it |
+| Rentable SF | `rsf` | — | ≥ `usf` | hidden when solving for it |
+| Load factor (%) | `lf` | 15 | 0–60 | hidden when solving for it |
+| Quoted rent ($/RSF/yr) | `rent` | 30 | 0–500 | cost-impact block |
+| Compare mode | `cmp` | off | toggle | Building A vs B: each has `rent`, `lf`; shared USF |
+
+### Outputs
+- The solved value + both factors always shown: **load factor = RSF/USF − 1**, **loss factor = (RSF−USF)/RSF**
+- Cost impact: effective **$/USF/yr** = rent × (1 + LF)
+- Compare mode: table A vs B → effective $/USF each, winner highlight, delta $/yr on the tenant's USF
 
 ### Formulas
 ```
-pct:   rentYear(n) = rent × (1+esc/100)^(n-1)            // n = 1..years
-fixed: rentYear(n) = rent + step × (n-1)
-totalPerSf = Σ rentYear(n)          // pct closed form: rent × ((1+g)^years − 1)/g
-avgPerSf   = totalPerSf / years
-cumIncrease = (rentYear(years) - rent) / rent
+loadFactor = rsf/usf − 1        lossFactor = (rsf − usf)/rsf = LF/(1+LF)
+rsf = usf × (1 + lf/100)        usf = rsf / (1 + lf/100)
+effectivePerUSF = rent × (1 + lf/100)
 ```
 
-### Outputs
-Year-by-year schedule table ($/SF and, if sf>0, annual $), total over term, average rent, final-year rent, cumulative increase %. Schedule included in PDF and compare mode.
-
 ### Edge cases
-| Condition | Behavior |
-|---|---|
-| `esc = 0` / `step = 0` | Flat schedule, works fine; note "no escalation." |
-| `years = 1` | Single row, total = rent. |
+- `rsf < usf` → error: `Rentable SF is always ≥ usable SF.`
+- `lf > 35` → warning: `Load factors above 35% are rare — verify the measurement standard (BOMA).`
+- Terminology note in content: NYC quotes "loss factor," most markets quote "load factor" — both always displayed to catch both query intents.
 
-### Worked Example (test fixture)
-$25.00 · pct 3.0% · 10 years →
-**rentYear(10) = $32.62 ($32.6193 unrounded) · totalPerSf = $286.60 ($286.5970) · avgPerSf = $28.66 · cumIncrease = 30.48%**
-Fixture 2 (fixed): $25.00 · step $0.75 · 10 years → **rentYear(10) = $31.75 · totalPerSf = $283.75 · avgPerSf = $28.38 (28.375)**
+### Differentiators
+Solves in all three directions · shows both factor conventions · two-building comparison on cost-per-usable-foot (the actual decision) — no ranking page does this.
 
-### FAQ (5)
-1. What is a rent escalation clause?
-2. What is a typical annual escalation in commercial leases? (commonly ~2.5–4% or fixed steps; varies by market/asset)
-3. Fixed-percentage vs CPI-linked escalations — what's the difference?
-4. How much will my rent grow over a 10-year lease? (walk the example)
-5. Do escalations apply to NNN expenses too? (base rent vs pass-throughs — expenses float on actuals)
+### Content outline
+H2s: Usable vs rentable square feet · Load factor vs loss factor (the two conventions) · What a quoted rate really costs per usable foot · Comparing two buildings with different load factors · Typical load factors by building type · FAQ.
+FAQ: What is a good load factor? · What's the difference between load factor and loss factor? · How is rentable square footage measured (BOMA)? · Why am I paying for space I can't use? · Do industrial leases have load factors?
 
-### Related tools
-Net Effective Rent (T5), NNN Lease (T2), CAM Charges (T3).
+### Worked example (= `lf.default`)
+USF 5,000 @ 15% LF → RSF **5,750**, loss factor **13.04%**; $30/RSF quoted → effective **$34.50/USF/yr**.
 
 ---
 
-## T7. Percentage Rent Calculator
+## T6 — Rent Escalation Calculator
 
-- **Slug:** `/percentage-rent-calculator/` · **Primary keyword:** "percentage rent calculator" (secondary: "percentage lease calculator", "natural breakpoint calculator")
+**Route:** `/rent-escalation-calculator/`
+**Primary keyword:** rent escalation calculator · **Variants:** commercial rent increase calculator, rent escalation clause, CPI rent escalation
+**Meta title:** `Rent Escalation Calculator — Fixed %, Steps & CPI Schedules`
+**Meta description:** `Build the full rent schedule for any escalation clause: fixed percentage, fixed dollar steps, custom schedules or CPI with caps and floors. Export to CSV or PDF.`
+**User & intent:** broker/tenant/landlord modeling a clause across a term; needs a schedule to paste into a proposal.
 
 ### Inputs
-| Field | Param | Type | Default | Range | Notes |
-|---|---|---|---|---|---|
-| Annual base rent ($) | `base` | number | 120,000 | 0–50,000,000 | |
-| Percentage rate (%) | `rate` | number | 6.0 | 0.1–20 | |
-| Breakpoint type | `bp` | enum | `natural` | `natural` \| `custom` | |
-| Custom breakpoint ($) | `bpv` | number | — | 0–1,000,000,000 | when `bp=custom` |
-| Annual gross sales ($) | `sales` | number | 2,600,000 | 0–1,000,000,000 | |
+
+| Field | key | Default | Range | Notes |
+|---|---|---|---|---|
+| Escalation type | `type` | `pct` | `pct` \| `step` \| `cpi` \| `custom` | |
+| Starting rent ($/SF/yr) | `start` | 28 | 0–500 | |
+| Area (SF) | `sf` | 4,000 | 100–2,000,000 | |
+| Term (years) | `term` | 10 | 1–30 | |
+| Escalation (%/yr) | `pct` | 3 | 0–15 | type=pct |
+| Step ($/SF) | `step` | 0.50 | 0–20 | type=step |
+| Assumed CPI (%/yr) | `cpi` | 2.5 | 0–15 | type=cpi |
+| CPI cap / floor (%) | `cap` `floor` | 4 / 2 | 0–15 | optional, type=cpi |
+| Frequency (every N years) | `freq` | 1 | 1–5 | escalation applies every N years |
+| Custom schedule | `sched` | — | — | editable per-year $/SF table, prefilled from `start` |
 
 ### Formulas
 ```
-naturalBreakpoint = base / (rate/100)
-breakpoint     = bp === 'natural' ? naturalBreakpoint : bpv
-percentageRent = max(0, (sales - breakpoint) × rate/100)
-totalRent      = base + percentageRent
-effectiveRate  = totalRent / sales
+periods elapsed at year y: k = floor((y−1)/freq)
+pct:    rate(y) = start × (1 + pct/100)^k
+step:   rate(y) = start + step × k
+cpi:    g = clamp(cpi, floor, cap); rate(y) = start × (1 + g/100)^k
+        (v1 uses a constant assumed CPI; content explains actual-CPI true-ups)
+annual(y) = rate(y) × sf     total = Σ annual(y)     avgRate = total / term / sf
 ```
 
 ### Outputs
-Natural breakpoint (always shown, even in custom mode, for comparison), percentage rent, total rent, effective rate % of sales. Bonus output: "sales needed before percentage rent kicks in."
+Year-by-year table (year, $/SF, Δ%, $/mo, $/yr) · total obligation · average rate · line chart · CSV + PDF.
 
 ### Edge cases
-| Condition | Behavior |
-|---|---|
-| `sales ≤ breakpoint` | percentageRent = $0; note "Sales are below the breakpoint — base rent only." |
-| `bp=custom` and `bpv < naturalBreakpoint` | Info badge: "This breakpoint is below the natural breakpoint — tenant-unfavorable." (and the reverse note when above) |
-| `rate = 0` | Blocked by range (min 0.1). |
-| `sales = 0` | effectiveRate hidden. |
+- `cap < floor` → error: `CPI cap must be ≥ the floor.`
+- `step` cannot take rate below 0 (clamp with warning).
+- Custom table rows = `term`; blank row → incomplete state.
 
-### Worked Example (test fixture)
-Base $120,000 · rate 6% · natural · sales $2,600,000 →
-**naturalBreakpoint = $2,000,000.00 · percentageRent = $36,000.00 · totalRent = $156,000.00 · effectiveRate = 6.00%**
-Fixture 2 (below breakpoint): sales $1,500,000 → **percentageRent = $0.00 · totalRent = $120,000.00 · effectiveRate = 8.00%**
+### Differentiators
+All four clause types in one tool (SERP tools do fixed % only) · every-N-years frequency · export-ready schedule.
 
-### FAQ (5)
-1. What is percentage rent?
-2. What is a natural breakpoint and how is it calculated?
-3. Natural vs artificial breakpoint — who benefits from each?
-4. What sales count toward gross sales? (typical exclusions: returns, taxes, employee sales — lease-specific)
-5. What's a typical percentage rate in retail leases? (commonly ~4–8%, varies by tenant type)
+### Content outline
+H2s: The four common escalation structures · Fixed vs CPI: who carries inflation risk · Caps, floors and how they're negotiated · Worked example · Reading an escalation clause (sample language) · FAQ.
+FAQ: What is a typical commercial rent escalation? · How does a CPI escalation clause work? · What is a rent escalation cap? · Are escalations negotiable? · Do escalations apply to NNN charges too?
 
-### Related tools
-NNN Lease (T2), CAM Charges (T3), Rent Escalation (T6).
+### Worked example (= `esc.default`)
+$28 start, 3%/yr, 10 yrs, 4,000 SF → year-10 rate **$36.53/SF**, total obligation **$1,283,954**.
 
 ---
 
-## T8. Parking Ratio Calculator
+## T7 — Cap Rate Calculator (hub)
 
-- **Slug:** `/parking-ratio-calculator/` · **Primary keyword:** "parking ratio calculator" (secondary: "parking spaces per 1000 sq ft calculator")
+**Route:** `/cap-rate-calculator/`
+**Primary keyword:** cap rate calculator · **Variants:** capitalization rate calculator, cap rate formula, property value from NOI
+**Meta title:** `Cap Rate Calculator — Solve Cap Rate, Value or Required NOI`
+**Meta description:** `Solve any side of the cap rate equation, build NOI from income and expenses, and stress-test value with a cap rate × NOI sensitivity matrix.`
+**User & intent:** investor/broker screening a deal or backing into value/required NOI.
 
 ### Inputs
-Mode toggle `mode`: `ratio` (default — compute the ratio) or `spaces` (compute required spaces).
 
-| Field | Param | Type | Default | Range | Mode |
-|---|---|---|---|---|---|
-| Building SF | `sf` | number | 60,000 | 1,000–10,000,000 | both |
-| Parking spaces available | `sp` | number | 240 | 0–100,000 | `ratio` |
-| Required ratio (per 1,000 SF) | `req` | number | 5.0 | 0–20 | `spaces` |
-| Spaces available (optional) | `have` | number | 0 | 0–100,000 | `spaces`; >0 adds surplus/shortfall |
+| Field | key | Default | Range | Notes |
+|---|---|---|---|---|
+| Solve for | `solve` | `cap` | `cap` \| `value` \| `noi` | tabs |
+| NOI ($/yr) | `noi` | 150,000 | −10M–100M | manual, or from builder |
+| Property value ($) | `value` | 2,000,000 | 1–1B | |
+| Cap rate (%) | `cap` | 7.5 | 0.5–20 | |
+| **NOI builder (accordion):** GPR `gpr` 200,000 · other income `oi` 5,000 · vacancy % `vac` 5 · taxes `tx` 22,000 · insurance `insx` 6,000 · utilities `ut` 9,000 · repairs `rep` 8,000 · reserves `res` 3,000 · management (% of EGI) `mgmt` 4 |
 
 ### Formulas
 ```
-ratio:  parkingRatio = sp / (sf / 1000)
-spaces: requiredSpaces = ceil(req × sf / 1000)
-        surplus        = have - requiredSpaces        // if have > 0
+cap = NOI / value × 100      value = NOI / (cap/100)      NOI = value × cap/100
+Builder: EGI = gpr × (1 − vac/100) + oi
+         mgmt$ = EGI × mgmt/100
+         NOI = EGI − (tx + insx + ut + rep + res) − mgmt$
+Sensitivity matrix: rows cap 4.5%..9.0% step 0.5; cols NOI −10%, −5%, base, +5%, +10%; cell = value
 ```
 
-### Outputs
-`ratio` mode: ratio per 1,000 SF (2 dp) + benchmark badge (see content: office ~4/1000, medical ~5–6, retail ~4–5, industrial ~1–2). `spaces` mode: required spaces (integer, ceil), surplus/shortfall.
-
 ### Edge cases
-| Condition | Behavior |
-|---|---|
-| `sf = 0` | Neutral empty state. |
-| `sp = 0` in ratio mode | ratio = 0 with note "No parking — common for CBD assets; verify municipal minimums." |
+- `value ≤ 0` → error. `cap` outside 2–15% → warning: `Cap rates outside 2–15% are unusual — check inputs.`
+- Negative NOI → cap shown in fail color with line: `Negative NOI: the property loses money before debt service.`
+- Vacancy applies to GPR only (tooltip states this).
 
-### Worked Example (test fixture)
-Ratio mode: 240 spaces · 60,000 SF → **parkingRatio = 4.00 per 1,000 SF**
-Spaces mode: req 5.0 · 22,000 SF · have 80 → **requiredSpaces = 110 · shortfall = 30**
+### Differentiators
+Three-way solver · integrated NOI builder (competitors link a separate page) · sensitivity matrix — the screenshot-able asset that earns links · asset-class benchmark table.
 
-### FAQ (5)
-1. What is a parking ratio and how is it expressed?
-2. What parking ratio does an office/medical/retail building need? (typical benchmarks; zoning governs)
-3. Is the ratio based on rentable or gross SF? (varies by ordinance — check the code)
-4. What if a building doesn't meet the required ratio? (variances, off-site agreements, valet — high-level)
-5. Do parking minimums still apply everywhere? (many US cities have reduced/eliminated them — verify locally)
+### Content outline
+H2s: The cap rate formula, three ways · Building NOI correctly (what's excluded) · What cap rates mean for value: sensitivity · Typical cap rates by asset class (Appendix A.1, `last_reviewed` shown) · Cap rate limits: what it ignores (leverage, capex, growth) · FAQ.
+FAQ: What is a good cap rate? · How do I calculate cap rate from NOI? · Does cap rate include mortgage payments? · Why do lower cap rates mean higher prices? · Cap rate vs cash-on-cash return?
 
-### Related tools
-Load Factor (T1), NNN Lease (T2), CAM Charges (T3).
+### Worked example (= `cap.default`)
+150,000 / 2,000,000 = **7.50%**. Builder example: EGI 195,000; mgmt 7,800; NOI **$139,200**.
 
 ---
 
-# Appendix A — URL & sitemap
+## T8 — DSCR Calculator (hub)
 
+**Route:** `/dscr-calculator/`
+**Primary keyword:** dscr calculator · **Variants:** debt service coverage ratio calculator, dscr loan calculator, max loan from noi
+**Meta title:** `DSCR Calculator — Debt Service Coverage & Max Loan Sizing`
+**Meta description:** `Calculate DSCR from NOI and debt service, build the payment from loan terms, and solve the maximum loan a property supports at any target coverage ratio.`
+**User & intent:** investor pre-underwriting a loan; broker sanity-checking leverage; wants the max-loan number lenders won't show them.
+
+### Inputs
+
+| Field | key | Default | Range | Notes |
+|---|---|---|---|---|
+| NOI ($/yr) | `noi` | 180,000 | 0–100M | link: "Need NOI? Build it in the Cap Rate calculator" |
+| Debt input mode | `dmode` | `build` | `build` \| `direct` | |
+| Annual debt service ($) | `ds` | — | >0 | direct mode |
+| Loan amount ($) | `loan` | 1,500,000 | 1–1B | build mode |
+| Interest rate (%/yr) | `rate` | 6.75 | 0–20 | |
+| Amortization (years) | `am` | 25 | 1–40 | |
+| Interest-only | `io` | off | toggle | |
+| Target DSCR (max-loan solver) | `target` | 1.25 | 1.0–2.5 | |
+
+### Formulas
 ```
-/                                      hub: "Commercial Lease Calculators"
-/load-factor-calculator/
-/triple-net-lease-calculator/
-/cam-charges-calculator/
-/ti-allowance-amortization-calculator/
-/net-effective-rent-calculator/
-/rent-escalation-calculator/
-/percentage-rent-calculator/
-/parking-ratio-calculator/
-/embed/<each-slug>/                    noindex
+r = rate/100/12   n = am × 12
+PMT = r = 0 ? loan/n : loan × r / (1 − (1+r)^−n)
+annualDS = io ? loan × rate/100 : PMT × 12
+DSCR = NOI / annualDS      (display: 2 decimals + "x")
+Max loan: maxDS = NOI / target
+  amortizing: maxLoan = (maxDS/12) × (1 − (1+r)^−n) / r     (r=0 → maxDS/12 × n)
+  IO:         maxLoan = maxDS / (rate/100)
 ```
-Wave 2 (separate spec later): cap-rate, DSCR, NOI, cash-on-cash, GRM, break-even-occupancy hubs + 1031 deadline & boot tools. Architecture must not assume 8 tools anywhere (tool registry = one config array in `src/config.ts`).
 
-# Appendix B — Build order
+### Outputs
+- **DSCR** with gauge bands: <1.00 fail (`Property doesn't cover the debt`) · 1.00–1.19 thin · 1.20–1.24 near typical minimum · 1.25–1.39 bankable · ≥1.40 strong
+- Monthly & annual debt service
+- **Max supportable loan** at target DSCR + the delta vs entered loan ("You're $236,840 under the max at 1.25x")
+- ScenarioCompare enabled (two loan quotes)
 
-1. **Session 0 — scaffold:** Astro project, tokens, BaseLayout/ToolLayout, AdSlot, ShareBar, ScenarioCompare shell, URL-state hook, schema helpers, hub page skeleton, Vitest setup. (Prompt C.1)
-2. **T1 Load Factor** — simplest; validates the entire pipeline. Do not start T2 until T1 meets §9 fully.
-3. **T2 NNN Lease** — heaviest UI (unit toggle).
-4. **T3 CAM** → **T4 TI Amortization** (schedule table = the one complex component).
-5. **T5 NER** → **T6 Rent Escalation** (share the year-schedule table component from T4/T6).
-6. **T7 Percentage Rent** → **T8 Parking Ratio**.
-7. Hub page final pass, cross-links, sitemap, OG images, Lighthouse audit.
+### Edge cases
+- `io=on` and `rate=0` → error: `Interest-only at 0% has no debt service.`
+- `annualDS = 0` guard → incomplete state.
+- Negative/zero NOI → DSCR `N/A` + fail line.
+
+### Differentiators
+Max-loan solver (the number people actually want; SERP pages stop at the ratio) · IO toggle · payment builder + direct mode · lender-threshold gauge · scenario compare.
+
+### Content outline
+H2s: What DSCR measures and why lenders anchor on it · Building debt service from loan terms (amortizing vs IO) · Minimum DSCRs by property type (Appendix A.2) · Solving the max loan from NOI · Levers that improve DSCR · FAQ.
+FAQ: What is a good DSCR? · What DSCR do lenders require? · How do I calculate DSCR with interest-only? · Does DSCR include taxes and insurance? · How can I increase my DSCR?
+
+### Worked example (= `dscr.default`)
+Loan $1.5M @ 6.75%, 25-yr am → PMT **$10,363.67/mo**, annual DS **$124,364**; DSCR = 180,000/124,364 = **1.45x**. Max loan @1.25x target = **$1,736,836**.
+
+---
+# Appendix A — Benchmark content (directional, editorial)
+
+All figures below are directional mid-2026 US ranges for the explainer tables. Anton reviews before publish; each page's frontmatter carries `last_reviewed: YYYY-MM-DD` rendered as "Benchmarks reviewed {date}". Refresh quarterly — it's a freshness signal and a repeat-visit hook.
+
+**A.1 Cap rates by asset class (stabilized, national ranges):** multifamily 4.5–6.0% · industrial 4.5–6.5% · single-tenant NNN retail 5.0–7.0% · shopping centers 6.0–8.0% · office 6.5–9.5% (wide post-repricing spread) · hotel 7.5–9.5%.
+
+**A.2 Typical minimum DSCR by property type:** multifamily (agency) 1.20–1.25x · office/retail 1.25–1.35x · industrial 1.20–1.30x · hotel/self-storage 1.40x+ · SBA-backed owner-user as low as 1.15x.
+
+**A.3 TI allowance ranges ($/SF):** 2nd-gen office 10–30 · new office / white box 30–60 · medical office 60–100+ · retail vanilla shell 20–50 · restaurant 100–250+ · industrial/flex office portion 5–20.
+
+**A.4 Load factors:** single-tenant floor 8–12% · multi-tenant office 12–20% · heavy-amenity buildings up to 25% · industrial usually 0–5%.
+
+**A.5 NNN expense sanity ranges ($/SF/yr):** property taxes 0.50–6.00+ · insurance 0.05–1.00 (coastal/FL higher) · CAM 1.00–6.00 retail, lower industrial. CAM admin fee typically 10–15%.
+
+**A.6 Escalations:** fixed 2.5–3.5%/yr is market-standard; CPI clauses usually capped 3–5% with 1.5–2.5% floors.
+
+---
+
+# Appendix B — Build order & Definition of Done
+
+**Wave 1 — architecture proof (goal: 2 pages fully done end-to-end):**
+1. Repo scaffold per §2–§5, calc-core + Vitest wired, CI on push.
+2. T5 Load Factor (simplest engine) → validates CalcShell, URL state, embed, PDF, schema.
+3. T1 NNN (modes, year table, scenario compare, chart) → validates the heavy components.
+
+**Wave 2:** T3 → T2 → T6 → T4 (reuses year-table + month engine patterns).
+**Wave 3:** T7 → T8 (hubs; sensitivity grid + gauge), then home + category hubs, sitemap, OG image template, analytics, consent, AdSlot flag.
+
+**Definition of Done per tool page — all must pass:**
+- [ ] calc-core tests green, including the Worked example fixture (exact numbers)
+- [ ] All edge-case error strings implemented verbatim
+- [ ] URL params round-trip (set inputs → copy link → open incognito → same state)
+- [ ] Embed mode renders and iframe snippet copies
+- [ ] Print stylesheet produces a clean 1-page PDF with inputs + results + year table
+- [ ] Lighthouse (mobile): Performance ≥ 95, CLS < 0.05, no console errors
+- [ ] Schema validates (Rich Results test): WebApplication + FAQPage + BreadcrumbList
+- [ ] Meta title/description from spec; single H1; canonical set
+- [ ] Content .mdx present (600–900 words) with 3+ contextual internal links
+- [ ] Keyboard-only pass: every input reachable, results announced (aria-live on primary metric)
+
+---
 
 # Appendix C — Claude Code kickoff prompts
 
-## C.1 Scaffold session
+**C.1 Scaffold prompt (run once):**
 
-> You are a senior front-end engineer. Read SPEC.md fully. Build **Session 0 (Appendix B, item 1)** only:
-> the Astro 5 + React + Tailwind 4 + TypeScript scaffold with all shared components and utilities from
-> §2–§8, an empty-but-styled hub page, and Vitest wired up with one passing dummy test in calc-core.
-> Do not build any calculator yet. Use placeholder design tokens (grays + one accent) clearly marked
-> `/* PLACEHOLDER — replace with final tokens */`. `SITE_NAME` and `DOMAIN` come from `src/config.ts`
-> constants with TODO placeholders. When done: `astro build` must pass with zero errors, and list for
-> me every TODO you left.
+```xml
+<role>You are a senior frontend engineer building a static calculator site.</role>
+<context>Full specification is in SPEC.md at the repo root. Read §1–§10 before writing anything. Stack: Astro 5 + React islands + TypeScript + Tailwind + Vitest. Static output for Cloudflare Pages. Design tokens arrive later — use CSS variables with neutral placeholder values.</context>
+<task>Scaffold the project: repo structure, calc-core package with test setup, CalcShell / NumberInput / UnitToggle / ResultCard shared components (§5), page layout template (§4), URL-state hook (§3), sitemap + robots + JSON-LD utilities (§8), AdSlot behind ADS_ENABLED flag (§9). Do not implement any tool yet.</task>
+<format>First output the file tree with one-line purpose per file and wait for my confirmation. Then generate files. Conventional commits.</format>
+```
 
-## C.2 Per-tool session (template — replace T«n»)
+**C.2 Per-tool prompt (template, one tool per session):**
 
-> Read SPEC.md §3–§9 and the spec for **T«n»** only. Build that tool completely: calc-core module with
-> Vitest tests (the Worked Example fixtures must pass to the cent — write the tests FIRST from the
-> fixtures), the React island, the page at its slug with the §8 content template (draft the copy and
-> FAQ answers per the outline; mark them `<!-- DRAFT: Anton to edit -->`), the embed route, and hub +
-> related-links updates. Follow every shared behavior in §4–§6. Definition of done is §9 — walk the
-> checklist explicitly at the end and show me the test output.
+```xml
+<task>Implement Tool {N} exactly per SPEC.md §T{N}: calc-core module with types, DEFAULTS and guard errors; Vitest test using the Worked example fixture; the page at the specified route using shared components; content stub as .mdx with the H2 outline and FAQ questions from the spec.</task>
+<format>Order: 1) calc-core + tests (show tests passing), 2) island component, 3) page + mdx stub. Ask zero questions if the spec answers it; flag genuine spec gaps as TODO comments referencing the section.</format>
+```
 
-## C.3 Owner decisions (Anton — before/while building)
-
-1. **Name + domain** — buy before Session 0 (needed for config, embed snippets, schema).
-2. **Design tokens** — colors, type scale, radii, spacing in `tokens.css`; replace placeholders after T1 proves the layout.
-3. **OG image template** — one Figma frame, export per tool (title + formula visual).
-4. **FAQ & content final edit** — every `DRAFT` marker; your domain voice is the moat.
-5. *(reminder)* 1 hour in Google Keyword Planner (location = US) to confirm cluster volumes — reorders Wave 2 priorities, does not change this spec.
+**C.3 Known open items (Anton decides, not Claude Code):** site name + domain · design tokens · OG template art direction · analytics ID · final FAQ answer copy (drafts get generated, Anton edits).
