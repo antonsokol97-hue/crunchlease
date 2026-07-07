@@ -38,7 +38,12 @@ export default function AdSlot({ id, placement, className = '' }: AdSlotProps) {
         visibility: showPlaceholder ? 'visible' : 'hidden',
       }}
     >
-      {!ADS_ENABLED && (
+      {ADS_ENABLED ? (
+        // TODO(owner): drop the ad-network tag here (AdSense/Ezoic <ins> +
+        // push script), keyed off `placement`/`id`. The reserved min-height
+        // above guarantees zero CLS when it fills (SPEC.md §9).
+        <div data-ad-network-slot={placement} className="h-full w-full" />
+      ) : (
         <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
           Advertisement
         </span>
