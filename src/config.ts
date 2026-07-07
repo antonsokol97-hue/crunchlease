@@ -25,7 +25,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
     category: 'lease',
     primaryKeyword: 'cam charges calculator',
     shortDescription: 'Estimate your pro-rata share of common area maintenance and reconcile year-end true-ups.',
-    status: 'planned',
+    status: 'live',
   },
   {
     slug: 'tenant-improvement-calculator',

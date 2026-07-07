@@ -1,0 +1,85 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import CamCalculator from '../../components/calculators/CamCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/cam.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'cam-calculator';
+
+// Meta (SPEC.md §T2 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'CAM Charges Calculator — Pro-Rata Share & Reconciliation';
+const heading = 'CAM Charges Calculator';
+const description =
+  'Work out your pro-rata CAM charges per SF and per month, model annual increases with caps, and reconcile estimated payments against actual year-end costs.';
+const valueProp = 'Estimate your pro-rata CAM per SF and per month — then reconcile it against the year-end actuals.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T2 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What is included in CAM charges?',
+    answer:
+      'CAM covers the cost of operating shared areas: parking lot upkeep and repaving, landscaping, snow removal, common-area lighting and utilities, security, and janitorial for common spaces. Many leases also fold in a management/admin fee. What counts as CAM — and what is excluded or capped — is defined by your lease, so the specifics vary deal to deal.',
+  },
+  {
+    question: 'How is my pro-rata share calculated?',
+    answer:
+      'Your pro-rata share is your leased square footage divided by the building\'s gross leasable area (GLA). A 2,500 SF suite in a 25,000 SF building is a 10% share, so you pay 10% of the CAM budget (plus any admin fee). Some leases use a different denominator or gross-up for vacancy — check how GLA is defined.',
+  },
+  {
+    question: 'What is a CAM reconciliation?',
+    answer:
+      "You pay estimated CAM monthly during the year. After year-end, the landlord compares the estimates to actual costs and issues a reconciliation — a true-up bill if actuals were higher, or a credit if lower. Review the reconciliation statement against the budget and your lease's exclusions and caps before paying.",
+  },
+  {
+    question: 'What is a typical CAM admin fee?',
+    answer:
+      'Administrative or management fees on CAM commonly run 10–15% of the CAM total, though the percentage and what it applies to are negotiable. Watch for fees stacked on top of a separate management fee, or applied to non-controllable costs like taxes and insurance — those are worth pushing back on.',
+  },
+  {
+    question: 'Can I negotiate a CAM cap?',
+    answer:
+      'Often yes. A cap limits how much controllable CAM can rise each year — commonly 3–5%. Caps come in cumulative and non-cumulative flavors, and usually exclude uncontrollable items like taxes, insurance, snow, and utilities. Confirm which costs the cap covers; a cap that excludes the fastest-growing line items offers less protection than it appears.',
+  },
+];
+
+// Related calculators (SPEC.md §3): lease-tier cross-links + an investment hub.
+const relatedSlugs = ['nnn-lease-calculator', 'rent-escalation-calculator', 'cap-rate-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <CamCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

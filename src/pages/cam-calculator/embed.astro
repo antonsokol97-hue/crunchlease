@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import CamCalculator from '../../components/calculators/CamCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /cam-calculator/embed/. EmbedModal points the iframe snippet here.
+const slug = 'cam-calculator';
+const title = 'CAM Charges Calculator — Pro-Rata Share & Reconciliation';
+const heading = 'CAM Charges Calculator';
+const description =
+  'Work out your pro-rata CAM charges per SF and per month, model annual increases with caps, and reconcile estimated payments against actual year-end costs.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <CamCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>
