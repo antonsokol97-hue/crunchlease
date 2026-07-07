@@ -33,7 +33,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
     category: 'lease',
     primaryKeyword: 'tenant improvement allowance calculator',
     shortDescription: 'Size a TI allowance against buildout cost and amortize the gap into monthly rent.',
-    status: 'planned',
+    status: 'live',
   },
   {
     slug: 'net-effective-rent-calculator',

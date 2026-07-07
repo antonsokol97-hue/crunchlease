@@ -1,0 +1,85 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import TiCalculator from '../../components/calculators/TiCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/ti.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'tenant-improvement-calculator';
+
+// Meta (SPEC.md §T3 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'Tenant Improvement Allowance & TI Amortization Calculator';
+const heading = 'Tenant Improvement Allowance & Amortization Calculator';
+const description =
+  'Size your TI allowance, compare it to buildout cost, and see the monthly rent add-on if the landlord amortizes the gap into the lease — with full schedule.';
+const valueProp = 'Check whether a TI allowance covers your buildout — and what amortizing the gap adds to your rent.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T3 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What is a typical tenant improvement allowance?',
+    answer:
+      'It depends heavily on the space. Second-generation office often runs $10–$30/SF, new office or white box $30–$60/SF, retail $20–$50/SF, and medical or restaurant space can reach $60–$250+/SF because of specialized systems. Industrial is lowest, typically $5–$20/SF on any office portion. Always benchmark against the specific space type and market.',
+  },
+  {
+    question: 'Is a TI allowance free money?',
+    answer:
+      "Not really. The landlord prices the allowance into your rent and lease economics — a bigger allowance usually means a higher face rate or longer term. And if your buildout exceeds the allowance, you pay the difference, often by amortizing it back into rent with interest. It's a negotiated concession, not a gift.",
+  },
+  {
+    question: 'What does amortized TI mean?',
+    answer:
+      'When your buildout costs more than the allowance, the landlord may fund the shortfall and add it back to your rent over the lease term, with interest — economically identical to a loan. Amortized TI shows up as a per-SF rent add-on. This calculator converts the gap into a monthly payment and a $/SF/yr rent impact.',
+  },
+  {
+    question: 'What interest rate do landlords use to amortize TI?',
+    answer:
+      "Commonly 6–10%/yr, though it's negotiable and tied to the landlord's cost of capital and your credit. A higher rate meaningfully raises the rent add-on, so it's worth pushing on. Watch the amortization term too: it should generally match the lease term, not exceed it.",
+  },
+  {
+    question: 'Does TI allowance cover furniture?',
+    answer:
+      'Usually not. TI allowances are meant for permanent improvements — walls, flooring, lighting, HVAC, built-ins — that stay with the space. Furniture, fixtures, and equipment (FF&E), cabling, and moving costs are typically excluded, though some deals fold a capped amount of "soft costs" in. Check the lease work letter for what qualifies.',
+  },
+];
+
+// Related calculators (SPEC.md §3): lease-tier cross-links + an investment hub.
+const relatedSlugs = ['net-effective-rent-calculator', 'nnn-lease-calculator', 'cap-rate-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <TiCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

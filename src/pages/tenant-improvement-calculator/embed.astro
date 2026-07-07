@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import TiCalculator from '../../components/calculators/TiCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /tenant-improvement-calculator/embed/. EmbedModal points the snippet here.
+const slug = 'tenant-improvement-calculator';
+const title = 'Tenant Improvement Allowance & TI Amortization Calculator';
+const heading = 'Tenant Improvement Allowance & Amortization Calculator';
+const description =
+  'Size your TI allowance, compare it to buildout cost, and see the monthly rent add-on if the landlord amortizes the gap into the lease — with full schedule.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <TiCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>
