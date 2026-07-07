@@ -9,6 +9,9 @@ import { DOMAIN } from './src/config.ts';
 export default defineConfig({
   site: DOMAIN,
   output: 'static',
+  // Inline the (small) bundled CSS into each page so it isn't a render-blocking
+  // request — the whole stylesheet is ~10KB (Lighthouse render-blocking fix).
+  build: { inlineStylesheets: 'always' },
   integrations: [
     react(),
     mdx(),

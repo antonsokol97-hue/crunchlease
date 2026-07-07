@@ -23,7 +23,7 @@ export default function ResultCard({ rows, emptyState = DEFAULT_EMPTY_STATE, tit
       className="rounded-lg border p-4"
       style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)', boxShadow: 'var(--shadow-card)' }}
     >
-      {title && <h3 className="mb-3 text-sm font-semibold">{title}</h3>}
+      {title && <h2 className="mb-3 text-sm font-semibold">{title}</h2>}
       {rows.length === 0 ? (
         <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
           {emptyState}

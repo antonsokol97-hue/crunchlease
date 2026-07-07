@@ -7,6 +7,10 @@ export const DOMAIN = 'https://crunchlease.com';
 // analytics load even after consent.
 export const GA_MEASUREMENT_ID = '';
 
+// Search Console verification token (SPEC.md §8). Empty = no verification meta
+// tag is emitted. Paste the token from the "HTML tag" method once verifying.
+export const SEARCH_CONSOLE_VERIFICATION = '';
+
 // Flip to true once an ad network is wired up (SPEC.md §9).
 export const ADS_ENABLED = false;
 

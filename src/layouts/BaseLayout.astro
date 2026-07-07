@@ -6,7 +6,7 @@ import '@fontsource/dm-sans/700.css';
 import '@fontsource/plus-jakarta-sans/600.css';
 import '@fontsource/plus-jakarta-sans/700.css';
 import '../styles/global.css';
-import { SITE_NAME, DOMAIN } from '../config';
+import { SITE_NAME, DOMAIN, SEARCH_CONSOLE_VERIFICATION } from '../config';
 import { buildOrganizationLd, buildWebSiteLd } from '../lib/seo';
 import RentUnitToggle from '../components/RentUnitToggle.tsx';
 import ConsentBanner from '../components/ConsentBanner.tsx';
@@ -54,8 +54,11 @@ const ogImageUrl = new URL(ogImage, DOMAIN).toString();
     {description && <meta name="twitter:description" content={description} />}
     <meta name="twitter:image" content={ogImageUrl} />
 
-    <!-- TODO(owner): Search Console verification meta tag (SPEC.md §8). -->
-    <meta name="google-site-verification" content="TODO" />
+    {/* Search Console verification (SPEC.md §8) — emitted only once a token is
+        set in config. */}
+    {SEARCH_CONSOLE_VERIFICATION && (
+      <meta name="google-site-verification" content={SEARCH_CONSOLE_VERIFICATION} />
+    )}
 
     {/* GA4 loads only after consent and only when GA_MEASUREMENT_ID is set —
         see ConsentBanner + lib/analytics (SPEC.md §10). */}
