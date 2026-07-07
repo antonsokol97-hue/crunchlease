@@ -1,12 +1,8 @@
-# CRE Calculators — MVP Build Spec (v1.1)
+# CRE Calculators — MVP Build Spec (v1.0)
 
 Spec for the first 8 tools of a commercial real estate calculator hub.
 Audience of this document: Claude Code (implementation) + Anton (design & content review).
 Language of product: English (US market). All UI copy in this spec is final draft unless marked TBD.
-
-**Changelog**
-
-- **v1.1 (2026-07-07):** §T2 cap model simplified to a single annual cap. Under a single constant `growth` rate, cumulative and non-cumulative caps are mathematically identical (the uncapped series is monotonic, so it never dips below the ceiling and rises again — the only case where the two bases diverge), so a two-way selector would be a control that does nothing. The cumulative-vs-non-cumulative distinction moves to **§T6 Rent Escalation**, whose per-year/custom schedules produce the variable increases that make the two bases genuinely diverge.
 
 ---
 
@@ -44,7 +40,7 @@ Out of scope for MVP: user accounts, backend, saved deals server-side, 1031 tool
 
 - **Astro 5** (static output) + **React islands** for calculator components only. Everything else ships zero JS.
 - **TypeScript** everywhere. **Tailwind CSS** with design tokens as CSS variables (Anton supplies tokens; components must be themeable via `var(--*)`, no hardcoded colors in components).
-- **`src/calc-core`** — pure TypeScript formula functions, no DOM, no React. One module per tool (`nnn.ts`, `cam.ts`, …). **Vitest** unit tests; fixtures = Worked examples from this spec.
+- **`packages/calc-core`** — pure TypeScript formula functions, no DOM, no React. One module per tool (`nnn.ts`, `cam.ts`, …). **Vitest** unit tests; fixtures = Worked examples from this spec.
 - No backend, no database. Deploy target: **Cloudflare Pages** (static).
 - No cookies except analytics consent handling. `localStorage` allowed only for unit-preference persistence (§6).
 - Dependencies: keep minimal. Charts: **Recharts** (lazy-loaded island) or plain SVG if simpler. PDF export: **print stylesheet + `window.print()`** (no PDF libs in MVP).
@@ -88,7 +84,7 @@ Explainer content (items 6–10): 600–900 words total per page. Claude Code ge
 
 ## 5. Shared components & calc engine
 
-**Components (`/src/components/` — shared root; calculator islands under `calculators/`):**
+**Components (`/src/components/calc/`):**
 - `<CalcShell>` — layout, results panel, action row, URL-state sync, analytics wiring.
 - `<NumberInput>` — label, unit suffix, thousands separators while typing, min/max clamp with inline error, tooltip icon (`?`) with 1–2 sentence definition. Accepts `1,500,000`, `1500000`, `1.5m` is NOT supported (keep parsing strict).
 - `<UnitToggle>` — segmented control (e.g. $/SF/yr ↔ $/SF/mo).
@@ -225,8 +221,8 @@ Defaults → NNN **$8.70/SF/yr**, gross **$32.70/SF/yr**, **$8,175/mo**, **$98,1
 | Admin fee (%) | `admin` | number | 10 | 0–25 | |
 | Annual CAM growth (%) | `growth` | number | 4 | 0–20 | estimate mode |
 | Projection (years) | `years` | number | 5 | 1–15 | estimate mode |
-| Annual CAM cap | `cap` | select | `none` | none \| annual | estimate mode |
-| Cap (%/yr) | `capPct` | number | 5 | 0–15 | shown when cap = annual; ceilings each year's increase |
+| CAM cap | `cap` | select | `none` | none \| non-cumulative \| cumulative | estimate mode |
+| Cap (%) | `capPct` | number | 5 | 0–15 | shown if cap ≠ none |
 | Monthly estimate paid ($) | `paid` | number | 1,100 | ≥0 | reconcile mode |
 | Months paid | `months` | number | 12 | 1–12 | reconcile mode |
 | Actual annual CAM ($) | `actual` | number | 138,000 | ≥0 | reconcile mode |
@@ -240,8 +236,8 @@ Defaults → NNN **$8.70/SF/yr**, gross **$32.70/SF/yr**, **$8,175/mo**, **$98,1
 proRata        = sf / gla
 billed(1)      = camT × (1 + admin/100) × proRata
 uncapped(y)    = billed(1) × (1 + growth/100)^(y−1)
-annual cap:    allowed(1) = uncapped(1); allowed(y) = min(uncapped(y), allowed(y−1) × (1 + capPct/100))
-               (single cap; ceilings each year's increase. v1.1: cumulative vs non-cumulative moved to §T6.)
+non-cumulative cap: allowed(1) = uncapped(1); allowed(y) = min(uncapped(y), allowed(y−1) × (1 + capPct/100))
+cumulative cap:     allowed(y) = min(uncapped(y), allowed(1) × (1 + capPct/100)^(y−1))
 reconcile:     share = actual × (1 + admin/100) × proRata
                balance = share − paid × months   (>0 due · <0 credit)
 ```
@@ -250,13 +246,13 @@ reconcile:     share = actual × (1 + admin/100) × proRata
 - `sf > gla` → error: `Tenant area can't exceed building GLA.`
 - Itemized sum of 0 with itemize open → incomplete state.
 - Tooltip disclosure (verbatim): `Caps usually apply to controllable CAM only (excludes taxes, insurance, snow, utilities). v1 applies the cap to the full CAM figure — read your lease.`
-- v1.1 backlog: controllable/uncontrollable split, occupancy gross-up. Cumulative vs non-cumulative cap compounding relocated to §T6 (needs the variable annual increases that §T6's schedules provide).
+- v1.1 backlog: controllable/uncontrollable split, occupancy gross-up.
 
 ### Differentiators
-Annual cap modeling on the projection · reconciliation verdict · itemized CAM accordion · CSV of projection table.
+Cap modeling with both compounding types (nobody in the SERP has this) · reconciliation verdict · itemized CAM accordion · CSV of projection table.
 
 ### Content outline
-H2s: What CAM charges cover · How pro-rata share works · CAM caps: how an annual cap limits increases · Reconciliation: why your year-end bill differs · Typical CAM ranges & admin fees · FAQ.
+H2s: What CAM charges cover · How pro-rata share works · CAM caps: cumulative vs non-cumulative (with the two formulas) · Reconciliation: why your year-end bill differs · Typical CAM ranges & admin fees · FAQ.
 FAQ: What is included in CAM charges? · How is my pro-rata share calculated? · What is a CAM reconciliation? · What is a typical CAM admin fee? · Can I negotiate a CAM cap?
 
 ### Worked example (= `cam.default`)
@@ -454,8 +450,6 @@ USF 5,000 @ 15% LF → RSF **5,750**, loss factor **13.04%**; $30/RSF quoted →
 | CPI cap / floor (%) | `cap` `floor` | 4 / 2 | 0–15 | optional, type=cpi |
 | Frequency (every N years) | `freq` | 1 | 1–5 | escalation applies every N years |
 | Custom schedule | `sched` | — | — | editable per-year $/SF table, prefilled from `start` |
-| Rent cap basis | `capMode` | `none` | none \| cumulative \| non-cumulative | v1.1; ceilings annual rent growth. Distinct from the CPI `cap`/`floor` rate clamp above |
-| Rent cap (%/yr) | `capMax` | 5 | 0–15 | shown when `capMode` ≠ none |
 
 ### Formulas
 ```
@@ -464,11 +458,6 @@ pct:    rate(y) = start × (1 + pct/100)^k
 step:   rate(y) = start + step × k
 cpi:    g = clamp(cpi, floor, cap); rate(y) = start × (1 + g/100)^k
         (v1 uses a constant assumed CPI; content explains actual-CPI true-ups)
-custom: rate(y) = sched[y]
-rent cap (v1.1, applied to the uncapped rate(y) series above):
-  non-cumulative: allowed(1)=rate(1); allowed(y)=min(rate(y), allowed(y−1) × (1+capMax/100))
-  cumulative:     allowed(y)=min(rate(y), allowed(1) × (1+capMax/100)^(y−1))
-  (the two bases only diverge when rate(y) is uneven — i.e. `custom`, or future actual-CPI)
 annual(y) = rate(y) × sf     total = Σ annual(y)     avgRate = total / term / sf
 ```
 
@@ -482,8 +471,6 @@ Year-by-year table (year, $/SF, Δ%, $/mo, $/yr) · total obligation · average 
 
 ### Differentiators
 All four clause types in one tool (SERP tools do fixed % only) · every-N-years frequency · export-ready schedule.
-
-**v1.1 (relocated from §T2):** cumulative vs non-cumulative cap compounding lives here — with variable per-year increases (custom schedules, uneven CPI) the two bases genuinely diverge. cumulative caps the ceiling off year 1 on a fixed `(1+capMax/100)^(y−1)` path (banking unused headroom); non-cumulative caps each year's increase off the prior year's capped value. Implemented via the `capMode`/`capMax` inputs above, reusing `applyCap` from `src/calc-core/cam.ts`. Under the deterministic `pct`/`step`/constant-`cpi` types the two bases coincide (monotonic series); they diverge on `custom` schedules.
 
 ### Content outline
 H2s: The four common escalation structures · Fixed vs CPI: who carries inflation risk · Caps, floors and how they're negotiated · Worked example · Reading an escalation clause (sample language) · FAQ.
