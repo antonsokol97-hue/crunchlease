@@ -81,13 +81,28 @@ const faqLd = faqEntries.length > 0 ? faqEntries : null;
           <slot name="content" />
         </div>
         {faqLd && <Faq items={faqLd} />}
-        <div class="mt-8">
+        <div class="mt-8" data-related-from={slug}>
           <slot name="related" />
         </div>
       </main>
     )
   }
 </BaseLayout>
+
+{
+  !isEmbed && (
+    <script is:inline define:vars={{ slug }}>
+      {/* related_click (from, to) — SPEC.md §10. Delegated so it covers the
+          related-calculator cards without per-link wiring. */}
+      document.querySelector('[data-related-from]')?.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        const to = link.getAttribute('href')?.replace(/\//g, '');
+        if (typeof window.gtag === 'function') window.gtag('event', 'related_click', { from: slug, to });
+      });
+    </script>
+  )
+}
 
 {
   isEmbed && (

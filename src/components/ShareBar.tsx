@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { track } from '../lib/analytics';
 
 export type ShareBarProps = {
+  /** Tool slug, for analytics events (SPEC.md §10). */
+  tool: string;
   onCopyLink: () => void | Promise<void>;
   onEmbed?: () => void;
   onReset?: () => void;
@@ -14,16 +17,18 @@ export type ShareBarProps = {
  * first tool, T5 Load Factor) and reset are supplied by each tool's island
  * via props.
  */
-export default function ShareBar({ onCopyLink, onEmbed, onReset, className = '' }: ShareBarProps) {
+export default function ShareBar({ tool, onCopyLink, onEmbed, onReset, className = '' }: ShareBarProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     await onCopyLink();
+    track('share_link_copied', { tool });
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };
 
   const handlePrint = () => {
+    track('pdf_export', { tool });
     window.print();
   };
 

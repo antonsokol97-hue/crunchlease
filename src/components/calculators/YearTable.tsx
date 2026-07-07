@@ -1,3 +1,5 @@
+import { track } from '../../lib/analytics';
+
 export type YearTableColumn<Row> = {
   header: string;
   /** Display string for a cell (formatted with money helpers). */
@@ -13,6 +15,8 @@ export type YearTableProps<Row> = {
   caption?: string;
   /** Enables the "Download CSV" button when set. */
   csvFileName?: string;
+  /** Tool slug, for the csv_export analytics event (SPEC.md §10). */
+  tool?: string;
 };
 
 function toCsv<Row>(rows: Row[], columns: YearTableColumn<Row>[]): string {
@@ -30,8 +34,9 @@ function toCsv<Row>(rows: Row[], columns: YearTableColumn<Row>[]): string {
  * Wrapped in an `overflow-x-auto` container so wide tables scroll rather than
  * breaking the page layout.
  */
-export default function YearTable<Row>({ rows, columns, caption, csvFileName }: YearTableProps<Row>) {
+export default function YearTable<Row>({ rows, columns, caption, csvFileName, tool }: YearTableProps<Row>) {
   const handleCsv = () => {
+    if (tool) track('csv_export', { tool });
     const blob = new Blob([toCsv(rows, columns)], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

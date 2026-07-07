@@ -3,6 +3,8 @@ import { formatCurrency, formatDollars, formatPerSf, formatPercent } from '../..
 import { computeNnn, DEFAULTS, NNN_MESSAGES, type NnnInput, type NnnMode, type NnnResult } from '../../calc-core/nnn';
 import { enumParam, numberParam, type ParamCodec, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
+import { useCalcTelemetry } from '../../hooks/useCalcTelemetry';
+import { track } from '../../lib/analytics';
 import CalcShell from './CalcShell';
 import ModeTabs from './ModeTabs';
 import NumberInput from './NumberInput';
@@ -78,6 +80,7 @@ export default function NnnCalculator({ embed: embedProp }: NnnCalculatorProps) 
   const scenarioA = extractScenario(state, '');
   const scenarioB = extractScenario(state, 'b_');
   const resultA = useMemo(() => computeNnn(scenarioA), [JSON.stringify(scenarioA)]);
+  useCalcTelemetry(SLUG, JSON.stringify(state), resultA.ok);
   const resultB = useMemo(() => computeNnn(scenarioB), [JSON.stringify(scenarioB)]);
 
   const setField = (prefix: Prefix, field: keyof NnnInput, value: number | NnnMode) => {
@@ -214,6 +217,7 @@ export default function NnnCalculator({ embed: embedProp }: NnnCalculatorProps) 
         }))}
       />
       <YearTable
+        tool={SLUG}
         rows={resultA.schedule}
         csvFileName="nnn-lease-schedule.csv"
         caption="Year-by-year NNN lease schedule"
@@ -234,7 +238,10 @@ export default function NnnCalculator({ embed: embedProp }: NnnCalculatorProps) 
       {!compareOn && (
         <button
           type="button"
-          onClick={enableCompare}
+          onClick={() => {
+            track('scenario_added', { tool: SLUG });
+            enableCompare();
+          }}
           className="rounded-md border px-3 py-1.5 text-sm"
           style={{ borderColor: 'var(--color-border)' }}
         >
@@ -242,6 +249,7 @@ export default function NnnCalculator({ embed: embedProp }: NnnCalculatorProps) 
         </button>
       )}
       <ShareBar
+        tool={SLUG}
         onCopyLink={() => navigator.clipboard.writeText(window.location.href)}
         onEmbed={() => setEmbedOpen(true)}
         onReset={() => setState(DEFAULT_STATE)}

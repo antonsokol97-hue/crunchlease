@@ -9,6 +9,8 @@ import {
 } from '../../calc-core/loadFactor';
 import { enumParam, numberParam, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
+import { useCalcTelemetry } from '../../hooks/useCalcTelemetry';
+import { track } from '../../lib/analytics';
 import CalcShell from './CalcShell';
 import NumberInput from './NumberInput';
 import UnitToggle from './UnitToggle';
@@ -70,6 +72,7 @@ export default function LoadFactorCalculator({ embed: embedProp }: LoadFactorCal
   const compareOn = cmp === '1';
 
   const resultA = useMemo(() => computeLoadFactor({ solve, usf, rsf, lf, rent }), [solve, usf, rsf, lf, rent]);
+  useCalcTelemetry(SLUG, JSON.stringify(state), resultA.ok);
 
   const set = <K extends keyof LoadFactorUrlState>(key: K, value: LoadFactorUrlState[K]) =>
     setState((prev) => ({ ...prev, [key]: value }));
@@ -162,7 +165,10 @@ export default function LoadFactorCalculator({ embed: embedProp }: LoadFactorCal
         <input
           type="checkbox"
           checked={compareOn}
-          onChange={(event) => set('cmp', event.target.checked ? '1' : '0')}
+          onChange={(event) => {
+            if (event.target.checked) track('scenario_added', { tool: SLUG });
+            set('cmp', event.target.checked ? '1' : '0');
+          }}
         />
         Compare two buildings
       </label>
@@ -218,6 +224,7 @@ export default function LoadFactorCalculator({ embed: embedProp }: LoadFactorCal
 
   const shareBar = embed ? undefined : (
     <ShareBar
+      tool={SLUG}
       onCopyLink={() => navigator.clipboard.writeText(window.location.href)}
       onEmbed={() => setEmbedOpen(true)}
       onReset={() => setState({ ...DEFAULTS, cmp: '0', lfB: 20, rentB: 30 })}

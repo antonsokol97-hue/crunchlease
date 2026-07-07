@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DOMAIN, SITE_NAME } from '../config';
+import { track } from '../lib/analytics';
 
 export type EmbedModalProps = {
   open: boolean;
@@ -29,6 +30,7 @@ export default function EmbedModal({ open, onClose, slug, title, height = 560 }:
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(snippet);
+    track('embed_copied', { tool: slug });
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };

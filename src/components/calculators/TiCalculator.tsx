@@ -10,6 +10,7 @@ import {
 } from '../../calc-core/ti';
 import { enumParam, numberParam, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
+import { useCalcTelemetry } from '../../hooks/useCalcTelemetry';
 import CalcShell from './CalcShell';
 import ModeTabs from './ModeTabs';
 import NumberInput from './NumberInput';
@@ -90,6 +91,7 @@ export default function TiCalculator({ embed: embedProp }: TiCalculatorProps) {
 
   const allowance = useMemo(() => computeAllowance({ sf, tia, cost }), [sf, tia, cost]);
   const amort = useMemo(() => computeAmortization({ p, rate, n, sf, lease }), [p, rate, n, sf, lease]);
+  useCalcTelemetry(SLUG, JSON.stringify(state), tab === 'a' ? allowance.ok : amort.ok);
 
   // "p auto = gap from Tab A, editable" (§T3): p follows the gap until the user
   // edits it. Initialise the touched flag by comparing the URL's p to the gap.
@@ -199,6 +201,7 @@ export default function TiCalculator({ embed: embedProp }: TiCalculatorProps) {
         <summary className="cursor-pointer text-sm font-medium">Show amortization schedule</summary>
         <div className="mt-3">
           <YearTable
+            tool={SLUG}
             rows={amort.schedule}
             csvFileName="ti-amortization-schedule.csv"
             caption="Month-by-month TI amortization schedule"
@@ -217,6 +220,7 @@ export default function TiCalculator({ embed: embedProp }: TiCalculatorProps) {
   const toolbar = embed ? null : (
     <div className="mt-4" data-print-hide>
       <ShareBar
+        tool={SLUG}
         onCopyLink={() => navigator.clipboard.writeText(window.location.href)}
         onEmbed={() => setEmbedOpen(true)}
         onReset={() => {

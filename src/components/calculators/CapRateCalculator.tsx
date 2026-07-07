@@ -11,6 +11,7 @@ import {
 } from '../../calc-core/capRate';
 import { enumParam, numberParam, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
+import { useCalcTelemetry } from '../../hooks/useCalcTelemetry';
 import CalcShell from './CalcShell';
 import ModeTabs from './ModeTabs';
 import NumberInput from './NumberInput';
@@ -70,6 +71,7 @@ export default function CapRateCalculator({ embed: embedProp }: CapRateCalculato
 
   const input: CapInput = { ...state, useBuilder };
   const result = useMemo(() => computeCapRate(input), [JSON.stringify(input)]);
+  useCalcTelemetry(SLUG, JSON.stringify(input), result.ok);
   const builder = useMemo(() => computeNoiBuilder(state), [JSON.stringify(state)]);
   const sensitivity = useMemo(() => (result.ok ? buildSensitivity(result.noi) : null), [result]);
 
@@ -157,6 +159,7 @@ export default function CapRateCalculator({ embed: embedProp }: CapRateCalculato
   const toolbar = embed ? null : (
     <div className="mt-4" data-print-hide>
       <ShareBar
+        tool={SLUG}
         onCopyLink={() => navigator.clipboard.writeText(window.location.href)}
         onEmbed={() => setEmbedOpen(true)}
         onReset={() => setState(DEFAULT_STATE)}

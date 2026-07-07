@@ -12,6 +12,7 @@ import {
 } from '../../calc-core/cam';
 import { enumParam, numberParam, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
+import { useCalcTelemetry } from '../../hooks/useCalcTelemetry';
 import CalcShell from './CalcShell';
 import ModeTabs from './ModeTabs';
 import NumberInput from './NumberInput';
@@ -145,6 +146,7 @@ export default function CamCalculator({ embed: embedProp }: CamCalculatorProps) 
     () => computeReconcile({ sf, gla, admin, actual, paid, months }),
     [sf, gla, admin, actual, paid, months],
   );
+  useCalcTelemetry(SLUG, JSON.stringify(state), mode === 'estimate' ? estimate.ok : reconcile.ok);
 
   const glaError = (result: CamEstimateResult | CamReconcileResult) =>
     !result.ok && result.error === 'TENANT_EXCEEDS_GLA' ? CAM_MESSAGES.TENANT_EXCEEDS_GLA : undefined;
@@ -264,6 +266,7 @@ export default function CamCalculator({ embed: embedProp }: CamCalculatorProps) 
     mode === 'estimate' && estimate.ok ? (
       <div className="mt-6">
         <YearTable
+          tool={SLUG}
           rows={estimate.schedule}
           csvFileName="cam-projection.csv"
           caption="CAM projection, uncapped vs capped"
@@ -280,6 +283,7 @@ export default function CamCalculator({ embed: embedProp }: CamCalculatorProps) 
   const toolbar = embed ? null : (
     <div className="mt-4" data-print-hide>
       <ShareBar
+        tool={SLUG}
         onCopyLink={() => navigator.clipboard.writeText(window.location.href)}
         onEmbed={() => setEmbedOpen(true)}
         onReset={() => setState(DEFAULT_STATE)}

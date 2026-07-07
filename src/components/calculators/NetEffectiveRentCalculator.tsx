@@ -3,6 +3,8 @@ import { formatCurrency, formatDollars, formatPerSf, formatPercent } from '../..
 import { computeNer, DEFAULTS, NER_MESSAGES, type NerInput, type NerResult } from '../../calc-core/netEffectiveRent';
 import { enumParam, numberParam, type ParamCodec, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
+import { useCalcTelemetry } from '../../hooks/useCalcTelemetry';
+import { track } from '../../lib/analytics';
 import CalcShell from './CalcShell';
 import NumberInput from './NumberInput';
 import RentInput from './RentInput';
@@ -69,6 +71,7 @@ export default function NetEffectiveRentCalculator({ embed: embedProp }: NetEffe
   const scenarioA = extractScenario(state, '');
   const scenarioB = extractScenario(state, 'b_');
   const resultA = useMemo(() => computeNer(scenarioA), [JSON.stringify(scenarioA)]);
+  useCalcTelemetry(SLUG, JSON.stringify(state), resultA.ok);
   const resultB = useMemo(() => computeNer(scenarioB), [JSON.stringify(scenarioB)]);
 
   const setField = (prefix: Prefix, field: keyof NerInput, value: number | boolean) => {
@@ -160,11 +163,12 @@ export default function NetEffectiveRentCalculator({ embed: embedProp }: NetEffe
   const toolbar = embed ? null : (
     <div className="mt-4 flex flex-wrap items-center gap-2" data-print-hide>
       {!compareOn && (
-        <button type="button" onClick={enableCompare} className="rounded-md border px-3 py-1.5 text-sm" style={{ borderColor: 'var(--color-border)' }}>
+        <button type="button" onClick={() => { track('scenario_added', { tool: SLUG }); enableCompare(); }} className="rounded-md border px-3 py-1.5 text-sm" style={{ borderColor: 'var(--color-border)' }}>
           Compare scenarios
         </button>
       )}
       <ShareBar
+        tool={SLUG}
         onCopyLink={() => navigator.clipboard.writeText(window.location.href)}
         onEmbed={() => setEmbedOpen(true)}
         onReset={() => setState(DEFAULT_STATE)}

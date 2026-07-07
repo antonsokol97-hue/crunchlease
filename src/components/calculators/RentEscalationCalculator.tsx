@@ -10,6 +10,7 @@ import {
 } from '../../calc-core/rentEscalation';
 import { enumParam, numberParam, type ParamCodec, type ParamSchema } from '../../lib/urlState';
 import { useUrlState } from '../../hooks/useUrlState';
+import { useCalcTelemetry } from '../../hooks/useCalcTelemetry';
 import CalcShell from './CalcShell';
 import ModeTabs from './ModeTabs';
 import NumberInput from './NumberInput';
@@ -78,6 +79,7 @@ export default function RentEscalationCalculator({ embed: embedProp }: RentEscal
   );
   const computeInput: EscInput = type === 'custom' ? { ...state, sched: effectiveSched } : state;
   const result = useMemo(() => computeEscalation(computeInput), [JSON.stringify(computeInput)]);
+  useCalcTelemetry(SLUG, JSON.stringify(state), result.ok);
 
   const setSchedRow = (i: number, value: number) => {
     const next = [...effectiveSched];
@@ -185,6 +187,7 @@ export default function RentEscalationCalculator({ embed: embedProp }: RentEscal
         points={result.schedule.map((r) => ({ label: `Yr ${r.year}`, value: r.rate }))}
       />
       <YearTable
+        tool={SLUG}
         rows={result.schedule}
         csvFileName="rent-escalation-schedule.csv"
         caption="Year-by-year rent escalation schedule"
@@ -202,6 +205,7 @@ export default function RentEscalationCalculator({ embed: embedProp }: RentEscal
   const toolbar = embed ? null : (
     <div className="mt-4" data-print-hide>
       <ShareBar
+        tool={SLUG}
         onCopyLink={() => navigator.clipboard.writeText(window.location.href)}
         onEmbed={() => setEmbedOpen(true)}
         onReset={() => setState({ ...DEFAULTS })}
