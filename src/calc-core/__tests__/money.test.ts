@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCurrency, formatNumber, formatPercent, roundMoney, roundTo } from '../money';
+import { formatCurrency, formatDollars, formatNumber, formatPercent, formatSf, roundMoney, roundTo } from '../money';
 
 describe('roundTo', () => {
   it('rounds half-up to the given number of decimals', () => {
@@ -23,6 +23,19 @@ describe('formatCurrency', () => {
   it('formats as USD with thousands separators and 2 decimals', () => {
     expect(formatCurrency(128800)).toBe('$128,800.00');
     expect(formatCurrency(10733.333333)).toBe('$10,733.33');
+  });
+});
+
+describe('formatDollars', () => {
+  it('formats a whole-dollar total with 0 decimals', () => {
+    expect(formatDollars(98100)).toBe('$98,100');
+    expect(formatDollars(17500.4)).toBe('$17,500');
+  });
+});
+
+describe('formatSf', () => {
+  it('formats an integer with thousands separators and no currency', () => {
+    expect(formatSf(5750)).toBe('5,750');
   });
 });
 
