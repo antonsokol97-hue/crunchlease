@@ -73,7 +73,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
     category: 'investment',
     primaryKeyword: 'dscr calculator',
     shortDescription: 'Calculate debt service coverage and solve the maximum loan a property supports.',
-    status: 'planned',
+    status: 'live',
   },
 ];
 

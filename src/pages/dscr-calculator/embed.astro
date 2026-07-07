@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import DscrCalculator from '../../components/calculators/DscrCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /dscr-calculator/embed/. EmbedModal points the snippet here.
+const slug = 'dscr-calculator';
+const title = 'DSCR Calculator — Debt Service Coverage & Max Loan Sizing';
+const heading = 'DSCR Calculator';
+const description =
+  'Calculate DSCR from NOI and debt service, build the payment from loan terms, and solve the maximum loan a property supports at any target coverage ratio.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <DscrCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>

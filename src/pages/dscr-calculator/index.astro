@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import DscrCalculator from '../../components/calculators/DscrCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/dscr.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'dscr-calculator';
+
+// Meta (SPEC.md §T8 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'DSCR Calculator — Debt Service Coverage & Max Loan Sizing';
+const heading = 'DSCR Calculator';
+const description =
+  'Calculate DSCR from NOI and debt service, build the payment from loan terms, and solve the maximum loan a property supports at any target coverage ratio.';
+const valueProp = 'Calculate DSCR, build the payment from loan terms, and solve the max loan a property supports.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T8 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What is a good DSCR?',
+    answer:
+      'Most lenders want at least 1.20–1.25x, and 1.25–1.40x is comfortably bankable. Below 1.00x the property does not cover its debt from operations. Higher is safer but means less leverage. What counts as "good" depends on property type and lender — hotels and self-storage often need 1.40x+, while agency multifamily can go to 1.20x.',
+  },
+  {
+    question: 'What DSCR do lenders require?',
+    answer:
+      'It varies by asset and program: agency multifamily around 1.20–1.25x, office and retail 1.25–1.35x, industrial 1.20–1.30x, hotel and self-storage 1.40x or more, and SBA owner-user deals sometimes as low as 1.15x. The required DSCR effectively caps your loan — which is exactly what the max-loan solver here computes.',
+  },
+  {
+    question: 'How do I calculate DSCR with interest-only?',
+    answer:
+      'On an interest-only loan the annual debt service is simply the loan amount times the interest rate, with no principal component. That lowers the payment versus an amortizing loan, so the DSCR is higher during the IO period. Toggle interest-only here to see it — just remember coverage drops once the loan begins amortizing.',
+  },
+  {
+    question: 'Does DSCR include taxes and insurance?',
+    answer:
+      'Indirectly. DSCR uses net operating income, which is already after operating expenses including property taxes and insurance. It does not add escrow to the debt-service side — DSCR compares NOI to principal and interest only. Some lenders use a stricter "debt yield" or add reserves; check how your lender defines the ratio.',
+  },
+  {
+    question: 'How can I increase my DSCR?',
+    answer:
+      'From the debt side: lower the interest rate, extend the amortization, or borrow less. From the income side: raise NOI by increasing rents or cutting operating expenses. Extending amortization is the quickest lever but raises total interest paid, so weigh the trade-off against the coverage you gain.',
+  },
+];
+
+// Related calculators (SPEC.md §3): the investment sibling + the lease tools
+// that build the NOI feeding this ratio.
+const relatedSlugs = ['cap-rate-calculator', 'nnn-lease-calculator', 'cam-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <DscrCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

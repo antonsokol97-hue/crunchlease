@@ -1,0 +1,59 @@
+---
+last_reviewed: 2026-07-07
+---
+
+{/* DRAFT: Anton to edit. Draft copy per SPEC.md §T8 content outline + §4 template (items 6–8).
+    Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
+
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+
+## What DSCR measures and why lenders anchor on it
+
+The debt service coverage ratio is net operating income divided by annual debt service. It tells a
+lender how much cushion the property's income has over the loan payment: a **1.25x** DSCR means NOI
+covers the debt 1.25 times over. Lenders anchor on it because it's the cleanest single measure of
+whether the asset — not the borrower — can carry the loan.
+
+```
+DSCR = NOI / annual debt service
+```
+
+## Building debt service from loan terms (amortizing vs IO)
+
+Enter a loan amount, rate, and amortization to build the payment, or type the annual debt service
+directly. Amortizing loans pay down principal, so the payment is higher than interest-only:
+
+```
+r = rate/100/12   n = amortization years × 12
+PMT = loan × r / (1 − (1+r)^−n)      annual DS (amortizing) = PMT × 12
+annual DS (interest-only) = loan × rate
+```
+
+A $1,500,000 loan at 6.75% over 25 years runs **$10,363.67/month** — **$124,364/year**. Against
+$180,000 NOI, that's a **1.45x** DSCR.
+
+## Minimum DSCRs by property type
+
+Directional lender minimums (Appendix A.2): multifamily (agency) 1.20–1.25x · office/retail
+1.25–1.35x · industrial 1.20–1.30x · hotel/self-storage 1.40x+ · SBA owner-user as low as 1.15x.
+
+## Solving the max loan from NOI
+
+The number lenders won't hand you: the largest loan the property supports at a target DSCR. Set the
+target and the calculator sizes it from your NOI and loan terms.
+
+```
+max debt service = NOI / target DSCR
+max loan (amortizing) = (max DS / 12) × (1 − (1+r)^−n) / r
+```
+
+At a 1.25x target, $180,000 NOI supports about **$1,736,836** — the delta against your entered loan
+shows your remaining leverage headroom. Size the NOI first in the
+[Cap Rate Calculator](/cap-rate-calculator/); the underlying rent comes from the
+[NNN Lease Calculator](/nnn-lease-calculator/) and [CAM Charges Calculator](/cam-calculator/).
+
+## Levers that improve DSCR
+
+Lower the rate, extend amortization, or reduce the loan to raise DSCR; raising NOI (higher rent,
+lower expenses) does it from the income side. Watch that a longer amortization improves DSCR but
+raises total interest — a trade-off, not a free win.
