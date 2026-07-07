@@ -1,0 +1,29 @@
+---
+import { buildFaqPageLd } from '../lib/seo';
+import type { FaqEntry } from '../lib/types';
+
+interface Props {
+  items: FaqEntry[];
+}
+
+const { items } = Astro.props;
+const faqLd = buildFaqPageLd(items);
+---
+
+<section aria-labelledby="faq-heading" class="faq" data-print-hide>
+  <h2 id="faq-heading" class="text-xl font-semibold">Frequently asked questions</h2>
+  <div class="mt-4 divide-y" style={{ borderColor: 'var(--color-border)' }}>
+    {
+      items.map((item) => (
+        <details class="group py-3">
+          <summary class="cursor-pointer text-sm font-medium marker:content-none">{item.question}</summary>
+          <p class="mt-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            {item.answer}
+          </p>
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(faqLd)} />
