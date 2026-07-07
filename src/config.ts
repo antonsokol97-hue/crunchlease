@@ -5,7 +5,7 @@ export const DOMAIN = 'https://crunchlease.com';
 
 // TODO(owner): GA4 measurement ID (SPEC.md §10, Appendix C.3 #4). Empty = no
 // analytics load even after consent.
-export const GA_MEASUREMENT_ID = '';
+export const GA_MEASUREMENT_ID = 'G-G2RK49N3S7';
 
 // Search Console verification token (SPEC.md §8). Empty = no verification meta
 // tag is emitted. Paste the token from the "HTML tag" method once verifying.
