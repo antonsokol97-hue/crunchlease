@@ -1,4 +1,4 @@
-# CRE Calculators — MVP Build Spec (v1.1)
+# CRE Calculators — MVP Build Spec (v1.2)
 
 Spec for the first 8 tools of a commercial real estate calculator hub.
 Audience of this document: Claude Code (implementation) + Anton (design & content review).
@@ -6,6 +6,7 @@ Language of product: English (US market). All UI copy in this spec is final draf
 
 **Changelog**
 
+- **v1.2 (2026-07-08):** Added the **Quarterly benchmark refresh** procedure (near Appendix A) — a standing instruction to re-verify every benchmark figure each quarter from authoritative 2026+ industry sources (never model memory), with primary sources per topic, a search-query checklist, and the rule to bump `last_reviewed` alongside any number change.
 - **v1.1 (2026-07-07):** §T2 cap model simplified to a single annual cap. Under a single constant `growth` rate, cumulative and non-cumulative caps are mathematically identical (the uncapped series is monotonic, so it never dips below the ceiling and rises again — the only case where the two bases diverge), so a two-way selector would be a control that does nothing. The cumulative-vs-non-cumulative distinction moves to **§T6 Rent Escalation**, whose per-year/custom schedules produce the variable increases that make the two bases genuinely diverge.
 
 ---
@@ -607,6 +608,27 @@ All figures below are directional mid-2026 US ranges for the explainer tables. A
 **A.5 NNN expense ranges ($/SF/yr) — market-dependent estimates, not fixed (sources: CommercialCafe, commercialrealestate.loans, Wiss, SVN, Re-Leased; reviewed 2026-07-08):** property taxes 0.50–6.00+ (varies widely by jurisdiction) · insurance 0.05–1.00+ (coastal/FL higher) · CAM 1.00–6.00 retail (fixed-rate CAM often ~$4.25/SF/yr), lower for industrial · CAM admin fee 10–15% (well-established norm).
 
 **A.6 Escalations (sources: CommercialCafe, commercialrealestate.loans, Wiss, SVN, Re-Leased; reviewed 2026-07-08):** fixed 2.5–3.5%/yr standard (~3% most common); CPI-indexed usually capped 3–5% annually with 1.5–2.5% floors. Cumulative caps let the landlord bank unused escalation from low-inflation years and apply it later (causing sudden jumps); non-cumulative limits each year to the ceiling with no carryover — over a 10-year term the difference is meaningful dollars, so tenants seeking budget predictability push for non-cumulative.
+
+## Quarterly benchmark refresh
+
+The benchmark tables in Appendix A are the only figures in this product that go stale on their own. Keeping them current is a **standing procedure**, not a one-time task — treat it as part of maintaining the site.
+
+**1. Cadence.** Review every benchmark figure once a quarter, or sooner if there's a major rate move (e.g. a Fed decision that shifts cap rates or lending terms). A tool's benchmark content and its `last_reviewed` frontmatter date must always be updated together — never bump the date without re-checking the numbers, and never change a number without bumping the date.
+
+**2. Sourcing rule.** Benchmark numbers must come from authoritative 2026+ industry sources — **never from model memory**. Primary sources by topic:
+- **Cap rates (T7):** CBRE US Cap Rate Survey + CBRE US Real Estate Market Outlook; cross-check Statista, JPMorgan, and net-lease reports (InvestmentGrade, Commercial Property Executive).
+- **DSCR minimums (T8):** multiple 2026 CRE lender guides (Commercial Loan Direct, Clearhouse, CLS CRE); note office has tightened to 1.35–1.50x.
+- **TI allowances (T3):** CRE broker/GC data (Cauble Group, Terrapin CG, NextGen Properties, LoopNet) — keep the allowance-vs-buildout-cost distinction.
+- **Load factors, NNN ranges, escalations, CAM caps (T1/T2/T5/T6):** CommercialCafe, commercialrealestate.loans, Wiss, SVN, Re-Leased; watch for new BOMA standard revisions.
+
+**3. Search-query checklist.** Rerun these each quarter, swapping in the current year:
+- `"CBRE cap rate survey [year] multifamily industrial office retail"`
+- `"commercial real estate minimum DSCR requirements [year] by property type"`
+- `"tenant improvement allowance per square foot [year] office medical retail restaurant"`
+- `"office building load factor typical percentage [year] BOMA"`
+- `"commercial lease annual escalation CPI cap CAM admin fee [year]"`
+
+**4. Update rule.** Where a source disagrees with the current benchmark, update to the source and keep a one-line note of what changed and which source drove it. Bump `last_reviewed` on every tool touched. This doubles as an SEO freshness signal and protects credibility with a professional audience.
 
 ---
 
