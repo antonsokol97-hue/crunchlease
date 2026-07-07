@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import CapRateCalculator from '../../components/calculators/CapRateCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/cap-rate.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'cap-rate-calculator';
+
+// Meta (SPEC.md §T7 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'Cap Rate Calculator — Solve Cap Rate, Value or Required NOI';
+const heading = 'Cap Rate Calculator';
+const description =
+  'Solve any side of the cap rate equation, build NOI from income and expenses, and stress-test value with a cap rate × NOI sensitivity matrix.';
+const valueProp = 'Solve cap rate, value, or required NOI — and stress-test value with a cap × NOI sensitivity matrix.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T7 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What is a good cap rate?',
+    answer:
+      'There is no universal "good" cap rate — it depends on asset class, market, and risk. Lower caps (4–6%) reflect stable, in-demand assets like multifamily and industrial; higher caps (7–9%+) reflect more risk or weaker markets, as in some office and hotel. A "good" cap is one that fairly compensates you for the specific risk you are taking.',
+  },
+  {
+    question: 'How do I calculate cap rate from NOI?',
+    answer:
+      'Divide net operating income by the property value and multiply by 100: cap = NOI / value × 100. A $150,000 NOI on a $2,000,000 property is a 7.5% cap. Make sure NOI is calculated correctly — income after operating expenses but before debt service, capex, and depreciation.',
+  },
+  {
+    question: 'Does cap rate include mortgage payments?',
+    answer:
+      'No. Cap rate is an unlevered measure — it deliberately excludes financing so you can compare properties independent of how they are funded. Debt service, loan terms, and leverage affect your cash-on-cash return and DSCR, not the cap rate. Model the financing separately with the DSCR calculator.',
+  },
+  {
+    question: 'Why do lower cap rates mean higher prices?',
+    answer:
+      'Because value = NOI / cap. For a fixed NOI, a lower cap rate divides by a smaller number, producing a higher value. Buyers accept lower caps (pay more per dollar of income) when they see lower risk or stronger growth. That inverse relationship is why "cap rate compression" pushes prices up.',
+  },
+  {
+    question: 'Cap rate vs cash-on-cash return?',
+    answer:
+      'Cap rate is unlevered — NOI over price, ignoring debt. Cash-on-cash return is levered — annual pre-tax cash flow after debt service divided by the cash you invested. With positive leverage, cash-on-cash can exceed the cap rate; with expensive debt, it can fall below. Use both: cap rate to screen, cash-on-cash to judge the actual return on your equity.',
+  },
+];
+
+// Related calculators (SPEC.md §3): the investment hub links its sibling +
+// the lease tools that build the NOI behind the cap.
+const relatedSlugs = ['dscr-calculator', 'nnn-lease-calculator', 'cam-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <CapRateCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import CapRateCalculator from '../../components/calculators/CapRateCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /cap-rate-calculator/embed/. EmbedModal points the snippet here.
+const slug = 'cap-rate-calculator';
+const title = 'Cap Rate Calculator — Solve Cap Rate, Value or Required NOI';
+const heading = 'Cap Rate Calculator';
+const description =
+  'Solve any side of the cap rate equation, build NOI from income and expenses, and stress-test value with a cap rate × NOI sensitivity matrix.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <CapRateCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>

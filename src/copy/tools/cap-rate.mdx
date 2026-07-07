@@ -1,0 +1,55 @@
+---
+last_reviewed: 2026-07-07
+---
+
+{/* DRAFT: Anton to edit. Draft copy per SPEC.md §T7 content outline + §4 template (items 6–8).
+    Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
+
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+
+## The cap rate formula, three ways
+
+The capitalization rate ties a property's net operating income to its value. Rearranged, one
+identity answers three questions:
+
+```
+cap = NOI / value × 100      value = NOI / (cap/100)      NOI = value × cap/100
+```
+
+Solve for the **cap rate** to see how a price pencils, for **value** to price a target return, or
+for **required NOI** to hit a value at a given cap. A $150,000 NOI on a $2,000,000 price is a
+**7.50%** cap.
+
+## Building NOI correctly (what's excluded)
+
+NOI is income after operating expenses but **before** debt service, capital expenditures, and
+depreciation. Build it from the top:
+
+```
+EGI = gross potential rent × (1 − vacancy%) + other income
+NOI = EGI − operating expenses − management fee
+```
+
+Our builder example: $200,000 GPR at 5% vacancy plus $5,000 other income is **$195,000** EGI; after
+$48,000 of operating expenses and a 4% management fee ($7,800), NOI is **$139,200**. Leave mortgage
+payments out — cap rate is an unlevered measure.
+
+## What cap rates mean for value: sensitivity
+
+Small cap-rate moves swing value hard. The sensitivity matrix stress-tests implied value across a
+band of cap rates and NOI outcomes, so you can see the downside before you sign. It's the number
+worth screenshotting into a memo.
+
+## Typical cap rates by asset class
+
+Directional national ranges (Appendix A.1): multifamily 4.5–6.0% · industrial 4.5–6.5% · single-
+tenant NNN retail 5.0–7.0% · shopping centers 6.0–8.0% · office 6.5–9.5% · hotel 7.5–9.5%. To build
+the NOI behind the cap, use the [NNN Lease Calculator](/nnn-lease-calculator/) and
+[CAM Charges Calculator](/cam-calculator/); to test the debt a purchase price supports, the
+[DSCR Calculator](/dscr-calculator/).
+
+## Cap rate limits: what it ignores
+
+Cap rate is a snapshot. It ignores leverage, future rent growth, capex, and lease rollover — two
+properties at the same cap can have very different risk. Use it to screen, then underwrite the cash
+flows and financing before you commit.

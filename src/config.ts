@@ -65,7 +65,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
     category: 'investment',
     primaryKeyword: 'cap rate calculator',
     shortDescription: 'Solve cap rate, value, or required NOI, and stress-test value with a sensitivity matrix.',
-    status: 'planned',
+    status: 'live',
   },
   {
     slug: 'dscr-calculator',
