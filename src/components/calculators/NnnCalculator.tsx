@@ -153,11 +153,9 @@ export default function NnnCalculator({ embed: embedProp }: NnnCalculatorProps) 
           </>
         )}
 
-        {/* TODO(SPEC.md §5): NumberInput shows the definition as help text below the
-            field; the spec asks for a (?) tooltip icon. Refine with the design tokens. */}
-        <NumberInput id={`${prefix}admin`} label="Admin fee on CAM" value={scenario.admin} onChange={(v) => setField(prefix, 'admin', v)} min={0} max={25} step={1} suffix="%" helpText="Management/admin fee landlords add to CAM, typically 10–15%." />
+        <NumberInput id={`${prefix}admin`} label="Admin fee on CAM" value={scenario.admin} onChange={(v) => setField(prefix, 'admin', v)} min={0} max={25} step={1} suffix="%" tooltip="Management/admin fee landlords add to CAM, typically 10–15%." />
         <NumberInput id={`${prefix}esc`} label="Base rent escalation" value={scenario.esc} onChange={(v) => setField(prefix, 'esc', v)} min={0} max={15} step={0.25} suffix="%/yr" />
-        <NumberInput id={`${prefix}nnng`} label="NNN growth assumption" value={scenario.nnng} onChange={(v) => setField(prefix, 'nnng', v)} min={0} max={15} step={0.25} suffix="%/yr" helpText="NNN charges float on actual expenses; this models expected growth." />
+        <NumberInput id={`${prefix}nnng`} label="NNN growth assumption" value={scenario.nnng} onChange={(v) => setField(prefix, 'nnng', v)} min={0} max={15} step={0.25} suffix="%/yr" tooltip="NNN charges float on actual expenses; this models expected growth." />
         <NumberInput id={`${prefix}term`} label="Lease term" value={scenario.term} onChange={(v) => setField(prefix, 'term', v)} min={1} max={30} step={1} suffix="years" />
       </>
     );

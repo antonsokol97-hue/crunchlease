@@ -12,13 +12,17 @@ export type NumberInputProps = {
   suffix?: string;
   /** Externally supplied validation message (e.g. cross-field checks like rsf < usf) — takes priority over range clamping. */
   errorText?: string;
+  /** Short guidance shown below the field. */
   helpText?: string;
+  /** 1–2 sentence field definition surfaced via a (?) icon next to the label (SPEC.md §5). */
+  tooltip?: string;
 };
 
 /**
  * Labeled numeric input with clamp-on-blur range validation and inline error
- * text (SPEC.md §7). Typing an out-of-range value shows the error and
- * keeps the typed value until blur, at which point it clamps.
+ * text (SPEC.md §7), plus an optional (?) tooltip definition (§5). Typing an
+ * out-of-range value shows the error and keeps the typed value until blur, at
+ * which point it clamps.
  */
 export default function NumberInput({
   id,
@@ -31,6 +35,7 @@ export default function NumberInput({
   suffix,
   errorText,
   helpText,
+  tooltip,
 }: NumberInputProps) {
   const [rawValue, setRawValue] = useState(String(value));
   const [rangeError, setRangeError] = useState<string | null>(null);
@@ -70,9 +75,19 @@ export default function NumberInput({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium">
-        {label}
-      </label>
+      <div className="flex items-center gap-1">
+        <label htmlFor={id} className="text-sm font-medium">
+          {label}
+        </label>
+        {tooltip && (
+          <span className="tooltip" tabIndex={0} role="note" aria-label={tooltip}>
+            <span aria-hidden="true" className="tooltip-icon">?</span>
+            <span className="tooltip-bubble" role="tooltip">
+              {tooltip}
+            </span>
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-2">
         <input
           id={id}
