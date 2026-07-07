@@ -1,11 +1,11 @@
 ---
-last_reviewed: 2026-07-07
+last_reviewed: 2026-07-08
 ---
 
 {/* DRAFT: Anton to edit. Draft copy per SPEC.md §T6 content outline + §4 template (items 6–8).
     Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
 
-<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-08.</p>
 
 ## The four common escalation structures
 
@@ -18,7 +18,9 @@ year or every N years.
 
 A fixed percentage or step gives both sides certainty — you know the rent in year 10 on day one. A
 CPI clause shifts inflation risk to the tenant: if inflation runs hot, so does your rent. Caps and
-floors split that risk, which is why most CPI clauses have both.
+floors split that risk, which is why most CPI clauses have both. Market-standard fixed escalations
+run **2.5–3.5%/yr** (about **3%** is most common); CPI clauses are usually capped at **3–5%**
+annually with floors of **1.5–2.5%** (Appendix A.6).
 
 ```
 fixed %:  rate(y) = start × (1 + pct/100)^k
@@ -31,10 +33,12 @@ CPI:      g = clamp(CPI, floor, cap); rate(y) = start × (1 + g/100)^k
 
 Two levers matter. A **CPI cap/floor** bounds the annual inflation rate before it's applied. A
 separate **rent-increase cap** ceilings how much the rent itself can climb year over year — and it
-comes in two flavors. A **cumulative** cap measures the ceiling from year 1, so a landlord can
-"bank" an under-cap year and apply a bigger increase later; a **non-cumulative** cap resets to the
-prior year's actual, giving the tenant more protection. The two only diverge when annual increases
-are uneven — try a custom schedule to see it.
+comes in two flavors. A **cumulative** cap lets the landlord bank unused escalation from
+low-inflation years and apply it later, which can produce a sudden jump in a single year. A
+**non-cumulative** cap limits each year to the ceiling with no carryover, giving the tenant more
+protection. The two only diverge when annual increases are uneven, but over a 10-year term the
+difference adds up to meaningful dollars — which is why tenants who want budget predictability push
+for non-cumulative. Toggle the two here (or try a custom schedule) to see the gap.
 
 ## Worked example
 
