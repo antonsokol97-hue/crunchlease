@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import LoadFactorCalculator from '../../components/calculators/LoadFactorCalculator.tsx';
+import AdSlot from '../../components/AdSlot.tsx';
+import Content from '../../copy/tools/load-factor.mdx';
+import { getTool } from '../../config';
+import type { FaqEntry, ToolMeta } from '../../lib/types';
+
+const slug = 'load-factor-calculator';
+
+// Meta (SPEC.md §T5 / §8): document title 50–60 chars; H1 = primary keyword.
+const title = 'Load Factor Calculator — Rentable vs Usable Square Feet';
+const heading = 'Load Factor Calculator';
+const description =
+  'Convert between usable and rentable square feet, get load and loss factors, and see what a quoted rate really costs per usable foot across two buildings.';
+const valueProp = 'See what a quoted $/RSF rate really costs per usable foot — and compare two buildings side by side.';
+
+// DRAFT: Anton to edit FAQ answers (SPEC.md §T5 FAQ, §4 item 10; C.3). 40–80 words each.
+const faqEntries: FaqEntry[] = [
+  {
+    question: 'What is a good load factor?',
+    answer:
+      'For multi-tenant office, 12–20% is typical, and single-tenant floors run lower at 8–12%. "Good" depends on what the common areas buy you — a heavy-amenity building can justify 25% if the lobby, fitness center, and conference space genuinely serve your team. Compare the effective cost per usable foot, not the load factor in isolation.',
+  },
+  {
+    question: "What's the difference between load factor and loss factor?",
+    answer:
+      'They measure the same gap between rentable and usable area from opposite ends. Load factor = RSF/USF − 1, the add-on to your usable space. Loss factor = (RSF − USF)/RSF, the share of rentable area you can\'t use. A 15% load factor equals a 13% loss factor. Most US markets quote load factor; New York quotes loss factor.',
+  },
+  {
+    question: 'How is rentable square footage measured (BOMA)?',
+    answer:
+      'Most US office buildings use a BOMA standard, which adds a share of building common areas to your usable space to arrive at rentable area. Different BOMA editions and measurement methods produce different numbers, so always ask which standard a quote uses before comparing two buildings.',
+  },
+  {
+    question: "Why am I paying for space I can't use?",
+    answer:
+      'Rentable square footage bundles your usable suite with a pro-rata share of lobbies, corridors, restrooms, and mechanical rooms — space everyone in the building relies on but no single tenant occupies. It\'s the standard way landlords recover common-area cost. The load factor tells you how much of your rent goes to that shared space.',
+  },
+  {
+    question: 'Do industrial leases have load factors?',
+    answer:
+      'Usually very little — industrial and warehouse space typically carries a 0–5% load factor because there\'s minimal shared common area. Office build-out inside a flex or industrial building can add a modest load factor on the office portion, but the warehouse itself is generally leased close to its usable footprint.',
+  },
+];
+
+// Related calculators (SPEC.md §3): 3 cards, cross-link within the lease tier +
+// at least one investment hub tool (Cap Rate).
+const relatedSlugs = ['nnn-lease-calculator', 'net-effective-rent-calculator', 'cap-rate-calculator'];
+const related = relatedSlugs.map((s) => getTool(s)).filter((t): t is ToolMeta => Boolean(t));
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} faqEntries={faqEntries}>
+  <Fragment slot="calculator">
+    <p class="mb-4 text-base" style="color: var(--color-text-muted)">{valueProp}</p>
+    <LoadFactorCalculator client:load />
+  </Fragment>
+
+  <Fragment slot="content">
+    <AdSlot id="below-results" placement="below-results" className="mb-8" />
+    <article class="tool-content">
+      <Content />
+    </article>
+    <AdSlot id="mid-content" placement="mid-content" className="my-8" />
+  </Fragment>
+
+  <Fragment slot="related">
+    <h2 class="text-xl font-semibold">Related calculators</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      {
+        related.map((t) => (
+          <a
+            href={`/${t.slug}/`}
+            class="rounded-lg border p-4 hover:border-[var(--color-accent)]"
+            style="border-color: var(--color-border)"
+          >
+            <span class="font-semibold">{t.name}</span>
+            <span class="mt-1 block text-sm" style="color: var(--color-text-muted)">
+              {t.shortDescription}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Fragment>
+</ToolLayout>

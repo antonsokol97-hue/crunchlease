@@ -27,6 +27,53 @@ body {
   font-size: var(--text-sm);
 }
 
+/* Explainer prose rendered from per-tool .mdx (SPEC.md §4 items 6–8). */
+.tool-content h2 {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-3);
+}
+
+.tool-content p {
+  margin-bottom: var(--space-4);
+  line-height: 1.6;
+}
+
+.tool-content pre,
+.tool-content code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.tool-content pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+
+.tool-content a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.tool-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.tool-content th,
+.tool-content td {
+  border: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
 @media print {
   .site-header,
   .site-footer,

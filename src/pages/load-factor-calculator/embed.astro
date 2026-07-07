@@ -1,0 +1,22 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import LoadFactorCalculator from '../../components/calculators/LoadFactorCalculator.tsx';
+
+// Prerendered chrome-less embed variant (SPEC.md §3). Static output can't
+// branch on `?embed=1` at request time, so the embed is its own route:
+// /load-factor-calculator/embed/. EmbedModal points the iframe snippet here.
+// TODO(SPEC.md §3): spec calls for `?embed=1`; using a dedicated static route
+// instead because Cloudflare Pages serves one HTML file per path regardless of
+// query string. Revisit if the site ever moves to SSR/hybrid rendering.
+const slug = 'load-factor-calculator';
+const title = 'Load Factor Calculator — Rentable vs Usable Square Feet';
+const heading = 'Load Factor Calculator';
+const description =
+  'Convert between usable and rentable square feet, get load and loss factors, and see what a quoted rate really costs per usable foot across two buildings.';
+---
+
+<ToolLayout title={title} heading={heading} description={description} slug={slug} embed={true}>
+  <Fragment slot="calculator">
+    <LoadFactorCalculator client:load embed={true} />
+  </Fragment>
+</ToolLayout>

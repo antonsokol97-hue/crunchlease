@@ -1,0 +1,64 @@
+---
+last_reviewed: 2026-07-07
+---
+
+{/* DRAFT: Anton to edit. Draft copy per SPEC.md §T5 content outline + §4 template (items 6–8).
+    Target 600–900 words total across the explainer. Tone: practitioner-direct, US CRE terms. */}
+
+<p class="text-sm" style="color: var(--color-text-muted)">Benchmarks reviewed 2026-07-07.</p>
+
+## Usable vs rentable square feet
+
+Usable square feet (USF) is the space your team actually occupies — offices, workstations, your
+private restrooms. Rentable square feet (RSF) adds your share of the building's common areas:
+lobbies, shared corridors, mechanical rooms. Landlords quote rent on RSF, but you can only work in
+USF, so RSF is what you pay for and USF is what you get.
+
+## Load factor vs loss factor (the two conventions)
+
+Both numbers describe the same gap between rentable and usable area — they just divide it
+differently, and different markets quote different ones.
+
+```
+load factor = RSF / USF − 1
+loss factor = (RSF − USF) / RSF = load factor / (1 + load factor)
+```
+
+Most US markets quote the **load factor** (the add-on to your usable area). New York quotes the
+**loss factor** (the share of rentable area you can't use). This calculator always shows both so a
+"15% load factor" and a "13% loss factor" building can be compared apples-to-apples.
+
+## What a quoted rate really costs per usable foot
+
+A $30/RSF quote isn't $30 for space you can use. Multiply by the load factor to get the effective
+rent on the space you actually occupy:
+
+```
+effective $/USF/yr = quoted $/RSF/yr × (1 + load factor)
+```
+
+At a 15% load factor, $30/RSF is **$34.50/USF/yr** — the number to use when you compare buildings.
+If you're also weighing base rent against pass-through costs, run the space through the
+[Triple Net (NNN) Lease Calculator](/nnn-lease-calculator/) next, and use the
+[Net Effective Rent Calculator](/net-effective-rent-calculator/) to fold in free rent and TI.
+
+## Comparing two buildings with different load factors
+
+The building with the lower face rate isn't always cheaper. Switch on **Compare two buildings** to
+hold your usable square footage constant and see the effective cost per usable foot side by side —
+the comparison that actually decides the deal.
+
+## Typical load factors by building type
+
+Ranges vary by measurement standard (BOMA) and how much amenity space a building carries
+(Appendix A.4):
+
+| Building type | Typical load factor |
+| --- | --- |
+| Single-tenant floor | 8–12% |
+| Multi-tenant office | 12–20% |
+| Heavy-amenity buildings | up to 25% |
+| Industrial | 0–5% |
+
+Investors sizing a whole building instead of a single suite will want the
+[Cap Rate Calculator](/cap-rate-calculator/) for the value side of the same deal.
