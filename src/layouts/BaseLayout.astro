@@ -1,23 +1,28 @@
 ---
 import '../styles/global.css';
-import { SITE_NAME } from '../config';
+import { SITE_NAME, DOMAIN } from '../config';
 import { buildOrganizationLd, buildWebSiteLd } from '../lib/seo';
 import RentUnitToggle from '../components/RentUnitToggle.tsx';
+import ConsentBanner from '../components/ConsentBanner.tsx';
 
 interface Props {
   title: string;
   description?: string;
   canonicalUrl?: string;
+  /** OG/Twitter image path (absolute-ised against DOMAIN). Placeholder shell — see C.3. */
+  ogImage?: string;
   /** Adds <meta name="robots" content="noindex"> — used for embed routes (SPEC.md §3). */
   noindex?: boolean;
   /** Suppresses sitewide header/footer chrome — used for embed routes. */
   bare?: boolean;
 }
 
-const { title, description = '', canonicalUrl, noindex = false, bare = false } = Astro.props;
+const { title, description = '', canonicalUrl, ogImage = '/og-default.svg', noindex = false, bare = false } =
+  Astro.props;
 
 const websiteLd = buildWebSiteLd();
 const organizationLd = buildOrganizationLd();
+const ogImageUrl = new URL(ogImage, DOMAIN).toString();
 ---
 
 <!doctype html>
@@ -31,12 +36,23 @@ const organizationLd = buildOrganizationLd();
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
+    {/* Open Graph / Twitter (SPEC.md §8). Uses a placeholder OG image until the
+        per-tool template art lands (C.3). */}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImageUrl} />
+
     <!-- TODO(owner): Search Console verification meta tag (SPEC.md §8). -->
     <meta name="google-site-verification" content="TODO" />
 
-    <!-- TODO(owner): GA4 snippet, loaded after consent — SPEC.md §10 events: calc_input_change,
-         calc_result_valid, pdf_export, csv_export, embed_copied, share_link_copied, scenario_added, related_click. -->
-    <script is:inline defer data-todo="ga4-measurement-id"></script>
+    {/* GA4 loads only after consent and only when GA_MEASUREMENT_ID is set —
+        see ConsentBanner + lib/analytics (SPEC.md §10). */}
 
     {!bare && <script is:inline type="application/ld+json" set:html={JSON.stringify(websiteLd)} />}
     {!bare && <script is:inline type="application/ld+json" set:html={JSON.stringify(organizationLd)} />}
@@ -65,5 +81,7 @@ const organizationLd = buildOrganizationLd();
         </footer>
       )
     }
+
+    {!bare && <ConsentBanner client:load />}
   </body>
 </html>
