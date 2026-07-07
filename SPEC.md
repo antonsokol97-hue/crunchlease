@@ -454,6 +454,8 @@ USF 5,000 @ 15% LF → RSF **5,750**, loss factor **13.04%**; $30/RSF quoted →
 | CPI cap / floor (%) | `cap` `floor` | 4 / 2 | 0–15 | optional, type=cpi |
 | Frequency (every N years) | `freq` | 1 | 1–5 | escalation applies every N years |
 | Custom schedule | `sched` | — | — | editable per-year $/SF table, prefilled from `start` |
+| Rent cap basis | `capMode` | `none` | none \| cumulative \| non-cumulative | v1.1; ceilings annual rent growth. Distinct from the CPI `cap`/`floor` rate clamp above |
+| Rent cap (%/yr) | `capMax` | 5 | 0–15 | shown when `capMode` ≠ none |
 
 ### Formulas
 ```
@@ -462,6 +464,11 @@ pct:    rate(y) = start × (1 + pct/100)^k
 step:   rate(y) = start + step × k
 cpi:    g = clamp(cpi, floor, cap); rate(y) = start × (1 + g/100)^k
         (v1 uses a constant assumed CPI; content explains actual-CPI true-ups)
+custom: rate(y) = sched[y]
+rent cap (v1.1, applied to the uncapped rate(y) series above):
+  non-cumulative: allowed(1)=rate(1); allowed(y)=min(rate(y), allowed(y−1) × (1+capMax/100))
+  cumulative:     allowed(y)=min(rate(y), allowed(1) × (1+capMax/100)^(y−1))
+  (the two bases only diverge when rate(y) is uneven — i.e. `custom`, or future actual-CPI)
 annual(y) = rate(y) × sf     total = Σ annual(y)     avgRate = total / term / sf
 ```
 
@@ -476,7 +483,7 @@ Year-by-year table (year, $/SF, Δ%, $/mo, $/yr) · total obligation · average 
 ### Differentiators
 All four clause types in one tool (SERP tools do fixed % only) · every-N-years frequency · export-ready schedule.
 
-**v1.1 (relocated from §T2):** cumulative vs non-cumulative cap compounding belongs here — with variable per-year increases (custom schedules, uneven CPI) the two bases genuinely diverge. cumulative caps the ceiling off year 1 on a fixed `(1+cap)^(y−1)` path (banking unused headroom); non-cumulative caps each year's increase off the prior year's capped value. Add a cap-basis selector to the CPI/custom clause types when this lands; `applyCap` in `src/calc-core/cam.ts` already implements both bases.
+**v1.1 (relocated from §T2):** cumulative vs non-cumulative cap compounding lives here — with variable per-year increases (custom schedules, uneven CPI) the two bases genuinely diverge. cumulative caps the ceiling off year 1 on a fixed `(1+capMax/100)^(y−1)` path (banking unused headroom); non-cumulative caps each year's increase off the prior year's capped value. Implemented via the `capMode`/`capMax` inputs above, reusing `applyCap` from `src/calc-core/cam.ts`. Under the deterministic `pct`/`step`/constant-`cpi` types the two bases coincide (monotonic series); they diverge on `custom` schedules.
 
 ### Content outline
 H2s: The four common escalation structures · Fixed vs CPI: who carries inflation risk · Caps, floors and how they're negotiated · Worked example · Reading an escalation clause (sample language) · FAQ.
